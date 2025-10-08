@@ -1,8 +1,11 @@
 import streamlit as st
 import sympy as sp
-from sympy import limit, oo, Symbol, integrate, latex
+from sympy import limit, oo, Symbol, integrate, latex, lambdify  # *** FIX: Agregué lambdify para gráfica robusta ***
+import matplotlib
+matplotlib.use('Agg')  # *** FIX: Backend para cloud – evita errores en gráfica ***
 import matplotlib.pyplot as plt
 import numpy as np
+from streamlit_confetti import confetti_stream  # *** NUEVO: Para confetti leve ***
 
 # *** ADICIÓN: Tema personalizado para diseño lindo (azul matemático) ***
 st.set_page_config(
@@ -127,7 +130,8 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             res = sp.simplify(expr)
 
         st.write("**Paso 4: Calcular el Límite**")
-        st.latex(f"Resultado del límite: {latex(res)}")
+        # *** FIX: Cambié st.latex a st.markdown con \text{} para espaciar "Resultado del límite" (no se pegan palabras) ***
+        st.markdown(r"**Resultado del Límite:** \$\text{" + latex(res) + r"}\$")
 
         # Paso 5: Análisis de convergencia con detalle
         st.write("**Paso 5: Análisis de Convergencia**")
@@ -138,8 +142,10 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.write(
                 "**Explicación detallada**: El límite existe y es finito, por lo que el área bajo la curva es acotada (limitada). Esto implica que la función decae lo suficientemente rápido (ej. como $1/x^2$ o mejor)."
             )
-            # *** ADICIÓN: Efecto wow para éxito ***
-            st.balloons()  # Confetti virtual al converger
+            # *** FIX: Success profesional + confetti leve (20 copos, speed media – sutil, dura 2-3 seg) ***
+            st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
+            st.info("Usa los pasos arriba para entender el proceso matemático.")
+            confetti_stream(num_confetti=20, speed=10)  # *** NUEVO: Confetti leve (pocos copos azules, no invasivo) ***
         else:
             st.error("❌ **La integral DIVERGE** (no converge).")
             st.write(
@@ -161,12 +167,14 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 end = 10.0
 
             x_vals = np.linspace(start, end, 200)
-            y_vals = []
-            for val in x_vals:
-                try:
-                    y_vals.append(float(f.subs(x, val)))
-                except:
-                    y_vals.append(0)  # Manejo de singularidades
+            # *** FIX: Cambié a lambdify para evaluar f(x) numéricamente (evita errores en subs, gráfica siempre sale) ***
+            try:
+                f_np = lambdify(x, f, 'numpy')
+                y_vals = f_np(x_vals)
+            except Exception as e:
+                st.error(f"❌ Error en gráfica: {e}. Usando valores aproximados.")
+                y_vals = np.zeros_like(x_vals)  # Fallback si falla
+
             ax.plot(x_vals,
                     y_vals,
                     label=f"f(x) = {f_str}",
@@ -199,6 +207,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             ax.legend(fontsize=10)
             ax.grid(True, alpha=0.3)
             st.pyplot(fig)
+            plt.close(fig)  # *** FIX: Agregué close para limpiar memoria en cloud ***
 
     except Exception as e:
         st.error(
