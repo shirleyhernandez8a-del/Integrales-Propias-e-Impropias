@@ -1,8 +1,3 @@
-streamlit
-sympy
-matplotlib
-numpy
-
 import streamlit as st
 import sympy as sp
 from sympy import limit, oo, Symbol, integrate, latex
