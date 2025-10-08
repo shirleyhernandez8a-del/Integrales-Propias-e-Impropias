@@ -145,7 +145,34 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             # *** FIX: Success profesional + confetti leve (20 copos, speed media – sutil, dura 2-3 seg) ***
             st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
             st.info("Usa los pasos arriba para entender el proceso matemático.")
-            confetti_stream(num_confetti=20, speed=10)  # *** NUEVO: Confetti leve (pocos copos azules, no invasivo) ***
+            st.markdown("""
+    <div id="confetti-holder"></div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        const duration = 3 * 1000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+          confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#3b82f6', '#60a5fa', '#93c5fd']
+          });
+          confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#3b82f6', '#60a5fa', '#93c5fd']
+          });
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        }());
+    </script>
+""", unsafe_allow_html=True)
         else:
             st.error("❌ **La integral DIVERGE** (no converge).")
             st.write(
