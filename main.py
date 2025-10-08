@@ -179,8 +179,13 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             )
 
         # Gráfica opcional (mejorada con área shaded)
-        if st.checkbox(
-                "📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)"):
+                # Gráfica opcional (mejorada con área shaded)
+        st.session_state["show_graph"] = st.checkbox(
+            "📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)",
+            value=st.session_state.get("show_graph", False)
+        )
+        if st.session_state["show_graph"]:
+
             fig, ax = plt.subplots(figsize=(10, 6))
             # Manejo seguro de start/end para la gráfica
             try:
