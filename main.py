@@ -6,6 +6,16 @@ matplotlib.use('Agg')  # *** FIX: Backend para cloud – evita errores en gráfi
 import matplotlib.pyplot as plt
 import numpy as np
 
+# *** FIX MÍNIMO: Inicializar session_state para gráfica persistente (recuerda checkbox y datos) ***
+if "show_graph" not in st.session_state:
+    st.session_state.show_graph = False
+if "saved_f" not in st.session_state:
+    st.session_state.saved_f = ""
+if "saved_a" not in st.session_state:
+    st.session_state.saved_a = ""
+if "saved_b" not in st.session_state:
+    st.session_state.saved_b = ""
+
 # *** ADICIÓN: Tema personalizado para diseño lindo (azul matemático) ***
 st.set_page_config(
     page_title="Solver de Integrales Impropias Detallado",
@@ -37,7 +47,7 @@ st.markdown(
 st.markdown("---")
 
 
-# Tu código original (intacto)
+# Tu código original (intacto, sin bloque de gráfica adentro)
 def resolver_integral(f_str, a_str, b_str, var='x'):
     try:
         x = Symbol(var)
@@ -141,104 +151,29 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.write(
                 "**Explicación detallada**: El límite existe y es finito, por lo que el área bajo la curva es acotada (limitada). Esto implica que la función decae lo suficientemente rápido (ej. como $1/x^2$ o mejor)."
             )
-            # *** FIX: Success profesional + confetti leve (20 copos, speed media – sutil, dura 2-3 seg) ***
+            # *** FIX: Success profesional + confetti leve (JS canvas-confetti, sutil 3 seg) ***
             st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
             st.info("Usa los pasos arriba para entender el proceso matemático.")
-            st.markdown("""
-    <div id="confetti-holder"></div>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    <script>
-        const duration = 3 * 1000;
-        const end = Date.now() + duration;
-
-        (function frame() {
-          confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#3b82f6', '#60a5fa', '#93c5fd']
-          });
-          confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: ['#3b82f6', '#60a5fa', '#93c5fd']
-          });
-          if (Date.now() < end) {
-            requestAnimationFrame(frame);
-          }
-        }());
-    </script>
-""", unsafe_allow_html=True)
+            st.markdown(""" 
+            <div id="confetti-holder"></div> 
+            <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script> 
+            <script> 
+            const duration = 3 * 1000; 
+            const end = Date.now() + duration; 
+            (function frame() { 
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] }); 
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] }); 
+                if (Date.now() < end) { 
+                    requestAnimationFrame(frame); 
+                } 
+            }()); 
+            </script> 
+            """, unsafe_allow_html=True)
         else:
             st.error("❌ **La integral DIVERGE** (no converge).")
             st.write(
                 "**Explicación detallada**: El límite es infinito o no existe, lo que significa que el área crece sin cota (ej. función decae lento como $1/x$). Usa pruebas como comparación o p-test para confirmar."
             )
-
-        # Gráfica opcional (mejorada con área shaded)
-                # Gráfica opcional (mejorada con área shaded)
-        st.session_state["show_graph"] = st.checkbox(
-            "📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)",
-            value=st.session_state.get("show_graph", False)
-        )
-        if st.session_state["show_graph"]:
-
-            fig, ax = plt.subplots(figsize=(10, 6))
-            # Manejo seguro de start/end para la gráfica
-            try:
-                start = 0.01 if a == 0 else float(a)
-            except Exception:
-                start = 0.01
-            try:
-                end = 10.0 if b == oo else float(b)
-            except Exception:
-                end = 10.0
-
-            x_vals = np.linspace(start, end, 200)
-            # *** FIX: Cambié a lambdify para evaluar f(x) numéricamente (evita errores en subs, gráfica siempre sale) ***
-            try:
-                f_np = lambdify(x, f, 'numpy')
-                y_vals = f_np(x_vals)
-            except Exception as e:
-                st.error(f"❌ Error en gráfica: {e}. Usando valores aproximados.")
-                y_vals = np.zeros_like(x_vals)  # Fallback si falla
-
-            ax.plot(x_vals,
-                    y_vals,
-                    label=f"f(x) = {f_str}",
-                    color='#3b82f6',
-                    linewidth=2)
-            # *** ADICIÓN: Sombreado para área bajo la curva (wow visual) ***
-            ax.fill_between(x_vals,
-                            0,
-                            y_vals,
-                            alpha=0.3,
-                            color='#3b82f6',
-                            label='Área aproximada')
-            ax.axvline(start,
-                       color='r',
-                       linestyle='--',
-                       label=f'Límite inferior: {a}',
-                       linewidth=2)
-            if b != oo:
-                ax.axvline(end,
-                           color='g',
-                           linestyle='--',
-                           label=f'Límite superior: {b}',
-                           linewidth=2)
-            ax.set_title(
-                "🔍 Gráfica Interactiva: Visualiza el Área de la Integral",
-                fontsize=16,
-                color='#1e3a8a')
-            ax.set_xlabel("x", fontsize=12)
-            ax.set_ylabel("f(x)", fontsize=12)
-            ax.legend(fontsize=10)
-            ax.grid(True, alpha=0.3)
-            st.pyplot(fig)
-            plt.close(fig)  # *** FIX: Agregué close para limpiar memoria en cloud ***
 
     except Exception as e:
         st.error(
@@ -292,38 +227,81 @@ with tab1:
         for i in range(100):
             progress_bar.progress(i + 1)
             # Simula carga
+        # *** FIX: Guarda datos en session_state para gráfica persistente ***
+        st.session_state.saved_f = f_expr
+        st.session_state.saved_a = a_lim
+        st.session_state.saved_b = b_lim
         resolver_integral(f_expr, a_lim, b_lim)
         # *** ADICIÓN: Auto gráfica si modo avanzado ***
         if modo == "Avanzado (con Gráfica Auto)":
+            st.session_state.show_graph = True
             st.rerun()  # Refresca para mostrar checkbox checked
 
-with tab2:
-    st.subheader("🧪 Ejemplos Pre-cargados (Clic para Ver Pasos Detallados)")
-    col_ex1, col_ex2, col_ex3 = st.columns(3)
-    with col_ex1:
-        if st.button("Ej1: ∫ 1/x² dx de 1 a ∞", use_container_width=True):
-            with st.expander("🔓 Revelar Pasos Detallados"
-                             ):  # *** ADICIÓN: Expander para no saturar ***
-                resolver_integral("1/x**2", "1", "oo")
-    with col_ex2:
-        if st.button("Ej2: ∫ 1/√x dx de 0 a 1", use_container_width=True):
-            with st.expander("🔓 Revelar Pasos Detallados"):
-                resolver_integral("1/sqrt(x)", "0", "1")
-    with col_ex3:
-        if st.button("Ej3: ∫ 1/x dx de 1 a ∞ (Diverge)",
-                     use_container_width=True):
-            with st.expander("🔓 Revelar Pasos Detallados"):
-                resolver_integral("1/x", "1", "oo")
+    # *** FIX NUEVO: Checkbox persistente para gráfica (usa session_state, fuera de función) ***
+    st.session_state.show_graph = st.checkbox(
+        "📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)",
+        value=st.session_state.show_graph,
+        key="graph_checkbox"
+    )
+    # *** FIX: Bloque de gráfica movido aquí (genera con datos guardados si checkbox marcado) ***
+    if st.session_state.show_graph and st.session_state.saved_f != "":
+        try:
+            x = Symbol('x')
+            f = sp.sympify(st.session_state.saved_f)
+            a = sp.sympify(st.session_state.saved_a)
+            b = sp.sympify(st.session_state.saved_b)
+            fig, ax = plt.subplots(figsize=(10, 6))
+            # Manejo seguro de start/end para la gráfica
+            try:
+                start = 0.01 if a == 0 else float(a)
+            except Exception:
+                start = 0.01
+            try:
+                end = 10.0 if b == oo else float(b)
+            except Exception:
+                end = 10.0
 
-# *** ADICIÓN: Footer creativo ***
-st.markdown("---")
-col_footer1, col_footer2 = st.columns(2)
-with col_footer1:
-    st.caption(
-        "👨‍💻 Desarrollado con ❤️ usando Streamlit y SymPy. ¡Proyecto para [tu nombre/clase]!"
-    )
-with col_footer2:
-    st.caption(
-        "📚 Para más info: [Khan Academy Integrales](https://www.khanacademy.org/math) | Versión 2.0 - Diseño Premium"
-    )
-st.markdown("---")
+            x_vals = np.linspace(start, end, 200)
+            # *** FIX: Cambié a lambdify para evaluar f(x) numéricamente (evita errores en subs, gráfica siempre sale) ***
+            try:
+                f_np = lambdify(x, f, 'numpy')
+                y_vals = f_np(x_vals)
+            except Exception as e:
+                st.error(f"❌ Error en gráfica: {e}. Usando valores aproximados.")
+                y_vals = np.zeros_like(x_vals)  # Fallback si falla
+
+            ax.plot(x_vals,
+                    y_vals,
+                    label=f"f(x) = {st.session_state.saved_f}",
+                    color='#3b82f6',
+                    linewidth=2)
+            # *** ADICIÓN: Sombreado para área bajo la curva (wow visual) ***
+            ax.fill_between(x_vals,
+                            0,
+                            y_vals,
+                            alpha=0.3,
+                            color='#3b82f6',
+                            label='Área aproximada')
+            ax.axvline(start,
+                       color='r',
+                       linestyle='--',
+                       label=f'Límite inferior: {a}',
+                       linewidth=2)
+            if b != oo:
+                ax.axvline(end,
+                           color='g',
+                           linestyle='--',
+                           label=f'Límite superior: {b}',
+                           linewidth=2)
+            ax.set_title(
+                "🔍 Gráfica Interactiva: Visualiza el Área de la Integral",
+                fontsize=16,
+                color='#1e3a8a')
+            ax.set_xlabel("x", fontsize=12)
+            ax.set_ylabel("f(x)", fontsize=12)
+            ax.legend(fontsize=10)
+            ax.grid(True, alpha=0.3)
+            st.pyplot(fig)
+            plt.close(fig)  # *** FIX: Agregué close para limpiar memoria en cloud ***
+        except Exception as e:
+            st.error(f"❌ Error al generar gráfica: {e}. Ver
