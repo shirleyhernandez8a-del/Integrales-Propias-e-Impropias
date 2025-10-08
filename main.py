@@ -5,7 +5,6 @@ import matplotlib
 matplotlib.use('Agg')  # *** FIX: Backend para cloud – evita errores en gráfica ***
 import matplotlib.pyplot as plt
 import numpy as np
-from streamlit_confetti import confetti_stream  # *** NUEVO: Para confetti leve ***
 
 # *** ADICIÓN: Tema personalizado para diseño lindo (azul matemático) ***
 st.set_page_config(
