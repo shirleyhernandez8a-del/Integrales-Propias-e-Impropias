@@ -304,4 +304,4 @@ with tab1:
             st.pyplot(fig)
             plt.close(fig)  # *** FIX: Agregué close para limpiar memoria en cloud ***
         except Exception as e:
-            st.error(f"❌ Error al generar gráfica: {e}. Ver
+            st.error(f"❌ Error al generar gráfica: {e}. Verifica función simple.")
