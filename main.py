@@ -57,9 +57,10 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.markdown(
                 "Esta es una integral impropia por **límite infinito superior**. Se resuelve como:"
             )
-           st.latex(r"\int_a^\infty f(x) \, dx = \lim_{t \to \infty} \int_a^t f(x) \, dx")
+            # Indentación corregida aquí (la línea que causó el error)
+            st.latex(r"\int_a^\infty f(x) \, dx = \lim_{t \to \infty} \int_a^t f(x) \, dx")
             st.write(
-                "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \to \infty$."
+                "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \\to \infty$."
             )
             mode = "infinite_upper"
         elif a == 0:
@@ -147,11 +148,11 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         if mode == "infinite_upper":
             st.write("Tomamos el límite de la expresión cuando $t \\to \\infty$.")
             st.latex(r"\lim_{t \to \infty} \left[ " + latex(expr) + r" \right]")
-            st.write("**Explicación detallada del cálculo**: Analizamos término por término. Los constantes quedan iguales, y los términos que crecen con t (o dependen de 1/t) tienden a 0 si la función decae rápido (ej. para 1/x², 1/t → 0 cuando t → ∞, así que queda el valor constante).")
+            st.write("**Explicación detallada del cálculo**: Analizamos término por término. Los constantes quedan iguales, y los términos que crecen con t (o dependen de 1/t) tienden a 0 si la función decae rápido (ej. para $1/x^2$, $1/t \\to 0$ cuando $t \\to \infty$, así que queda el valor constante).")
         elif mode == "singular_lower":
             st.write("Tomamos el límite de la expresión cuando $\\epsilon \\to 0^+$.")
             st.latex(r"\lim_{\epsilon \to 0^+} \left[ " + latex(expr) + r" \right]")
-            st.write("**Explicación detallada del cálculo**: Verificamos el comportamiento cerca de ε=0. Si hay término como 1/√ε, diverge a ∞; si converge, el límite es finito.")
+            st.write("**Explicación detallada del cálculo**: Verificamos el comportamiento cerca de $\\epsilon=0$. Si hay término como $1/\sqrt{\\epsilon}$, diverge a $\\infty$; si converge, el límite es finito.")
         else:
             st.write("No se necesita límite (integral propia directa). El valor es la expresión simplificada.")
             st.latex(latex(expr))
@@ -166,20 +167,20 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             )
             st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
             st.info("Usa los pasos arriba para entender el proceso matemático.")
-            st.markdown(""" 
-            <div id="confetti-holder"></div> 
-            <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script> 
-            <script> 
-            const duration = 3 * 1000; 
-            const end = Date.now() + duration; 
-            (function frame() { 
-                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] }); 
-                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] }); 
-                if (Date.now() < end) { 
-                    requestAnimationFrame(frame); 
-                } 
-            }()); 
-            </script> 
+            st.markdown("""
+            <div id="confetti-holder"></div>
+            <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+            <script>
+            const duration = 3 * 1000;
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] });
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+            </script>
             """, unsafe_allow_html=True)
         else:
             st.error("❌ **La integral DIVERGE** (no converge).")
@@ -272,7 +273,7 @@ with tab1:
                 y_vals = f_np(x_vals)
             except Exception as e:
                 st.error(f"❌ Error en gráfica: {e}. Usando valores aproximados.")
-                y_vals = np.zeros_like(x_vals)  # Fallback
+                y_vals = np.zeros_like(x_vals) # Fallback
 
             ax.plot(x_vals,
                     y_vals,
