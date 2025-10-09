@@ -235,7 +235,6 @@ with tab1:
         # *** ADICIÓN: Auto gráfica si modo avanzado ***
         if modo == "Avanzado (con Gráfica Auto)":
             st.session_state.show_graph = True
-            st.rerun()  # Refresca para mostrar checkbox checked
 
     # *** FIX NUEVO: Checkbox persistente para gráfica (usa session_state, fuera de función) ***
     st.session_state.show_graph = st.checkbox(
