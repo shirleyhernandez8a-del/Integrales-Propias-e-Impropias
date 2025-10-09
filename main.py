@@ -27,14 +27,13 @@ st.set_page_config(
 # *** ADICIÓN: Configuración de tema (colores pro) ***
 st.markdown("""
     <style>
-    .main {background-color: #f0f8ff;}  /* Fondo azul claro */
+    .main {background-color: #f0f8ff;} /* Fondo azul claro */
     .stApp {background-color: #f0f8ff;}
-    .sidebar .sidebar-content {background-color: #e6f3ff;}  /* Sidebar azul */
-    h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}  /* Título bold */
-    .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}  /* Botones redondeados azules */
+    .sidebar .sidebar-content {background-color: #e6f3ff;} /* Sidebar azul */
+    h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';} /* Título bold */
+    .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;} /* Botones redondeados azules */
     </style>
-""",
-            unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # *** ADICIÓN: Header creativo con emoji y descripción ***
 st.markdown("---")
@@ -46,8 +45,7 @@ st.markdown(
     unsafe_allow_html=True)
 st.markdown("---")
 
-
-# Tu código original (intacto, sin bloque de gráfica adentro)
+# Tu código original (intacto, con fixes solo en Paso 3/4)
 def resolver_integral(f_str, a_str, b_str, var='x'):
     try:
         x = Symbol(var)
@@ -113,34 +111,74 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             f"F(x) = {latex(F)} + C \\quad \\text{{(donde C es constante, pero se cancela en límites)}}"
         )
 
-        # Evaluar integral definida con límites
-        st.write(
-            "**Paso 3: Evaluar la Integral Definida Usando el Teorema Fundamental**"
-        )
+        # *** FIX: Paso 3 Mejorado con Subpasos Detallados + LaTeX Display (Renderiza Perfecto, Explica de Dónde Sale la Expr) ***
+        st.write("**Paso 3: Evaluar la Integral Definida Usando el Teorema Fundamental**")
         if mode == "infinite_upper":
-            st.write(
-                "Evaluamos: $[F(t) - F(a)]$ y tomamos $\lim_{t\\to\\infty}$")
+            st.write("Evaluamos: $[F(t) - F(a)]$ y tomamos $\lim_{t\\to\\infty}$")
             t = Symbol('t')
-            expr = F.subs(x, t) - F.subs(x, a)
-            st.latex(f"Expresión: {latex(expr)}")
+            # Subpasos detallados: De dónde sale cada parte
+            F_t = F.subs(x, t)
+            F_a = F.subs(x, a)
+            st.write("**Subpaso 3.1: Sustituir en la antiderivada para el límite superior variable (t)**")
+            st.latex(r"$$F(t) = " + latex(F_t) + r"$$")
+            st.write("**Explicación**: Reemplazamos x = t en F(x) para obtener el valor en el límite superior.")
+            st.write("**Subpaso 3.2: Sustituir en la antiderivada para el límite inferior fijo (a)**")
+            st.latex(r"$$F(a) = " + latex(F_a) + r"$$")
+            st.write("**Explicación**: Reemplazamos x = a en F(x) para obtener el valor en el límite inferior.")
+            st.write("**Subpaso 3.3: Aplicar el Teorema Fundamental - Restar para formar la expresión de la integral**")
+            st.write("Por el Teorema Fundamental del Cálculo, la integral definida es la diferencia de la antiderivada en los límites.")
+            expr = F_t - F_a
+            st.latex(r"$$\int_a^t f(x) \, dx = F(t) - F(a) = " + latex(expr) + r"$$")
             res = limit(expr, t, oo)
         elif mode == "singular_lower":
-            st.write(
-                "Evaluamos: $[F(b) - F(\epsilon)]$ y tomamos $\lim_{\epsilon\\to 0^+}$"
-            )
+            st.write("Evaluamos: $[F(b) - F(\epsilon)]$ y tomamos $\lim_{\epsilon\\to 0^+}$")
             epsilon = Symbol('epsilon')
-            expr = F.subs(x, b) - F.subs(x, epsilon)
-            st.latex(f"Expresión: {latex(expr)}")
+            # Subpasos detallados
+            F_b = F.subs(x, b)
+            F_epsilon = F.subs(x, epsilon)
+            st.write("**Subpaso 3.1: Sustituir en la antiderivada para el límite superior fijo (b)**")
+            st.latex(r"$$F(b) = " + latex(F_b) + r"$$")
+            st.write("**Explicación**: Reemplazamos x = b en F(x).")
+            st.write("**Subpaso 3.2: Sustituir en la antiderivada para el límite inferior variable (ε)**")
+            st.latex(r"$$F(\epsilon) = " + latex(F_epsilon) + r"$$")
+            st.write("**Explicación**: Reemplazamos x = ε para evitar la singularidad en 0.")
+            st.write("**Subpaso 3.3: Aplicar el Teorema Fundamental - Restar para formar la expresión**")
+            st.write("La integral de ε a b es F(b) - F(ε).")
+            expr = F_b - F_epsilon
+            st.latex(r"$$\int_\epsilon^b f(x) \, dx = F(b) - F(\epsilon) = " + latex(expr) + r"$$")
             res = limit(expr, epsilon, 0, dir='+')
         else:  # proper
-            st.write("Evaluamos: $F(b) - F(a)$ (integral propia)")
-            expr = F.subs(x, b) - F.subs(x, a)
-            st.latex(f"Expresión: {latex(expr)}")
+            st.write("Evaluamos: $F(b) - F(a)$ (integral propia, sin límites variables)")
+            # Subpasos detallados para proper
+            F_b = F.subs(x, b)
+            F_a = F.subs(x, a)
+            st.write("**Subpaso 3.1: Sustituir en la antiderivada para el límite superior (b)**")
+            st.latex(r"$$F(b) = " + latex(F_b) + r"$$")
+            st.write("**Explicación**: Reemplazamos x = b en F(x).")
+            st.write("**Subpaso 3.2: Sustituir en la antiderivada para el límite inferior (a)**")
+            st.latex(r"$$F(a) = " + latex(F_a) + r"$$")
+            st.write("**Explicación**: Reemplazamos x = a en F(x).")
+            st.write("**Subpaso 3.3: Aplicar el Teorema Fundamental - Restar para el valor exacto**")
+            st.write("No hay singularidad ni infinito, así que la resta da el resultado directo.")
+            expr = F_b - F_a
+            st.latex(r"$$\int_a^b f(x) \, dx = F(b) - F(a) = " + latex(expr) + r"$$")
             res = sp.simplify(expr)
 
+        # *** FIX: Paso 4 Mejorado con Explicación Detallada del Cálculo + LaTeX Display (Renderiza Bonito, No Raw) ***
         st.write("**Paso 4: Calcular el Límite**")
-        # *** FIX: Cambié st.latex a st.markdown con \text{} para espaciar "Resultado del límite" (no se pegan palabras) ***
-        st.markdown(r"**Resultado del Límite:** \$\text{" + latex(res) + r"}\$")
+        if mode == "infinite_upper":
+            st.write("Tomamos el límite de la expresión cuando $t \\to \\infty$.")
+            st.latex(r"$$\lim_{t \to \infty} \left[ " + latex(expr) + r" \right]$$")
+            st.write("**Explicación detallada del cálculo**: Analizamos término por término. Los constantes quedan iguales, y los términos que crecen con t (o dependen de 1/t) tienden a 0 si la función decae rápido (ej. para 1/x², 1/t → 0 cuando t → ∞, así que queda el valor constante).")
+        elif mode == "singular_lower":
+            st.write("Tomamos el límite de la expresión cuando $\\epsilon \\to 0^+$.")
+            st.latex(r"$$\lim_{\epsilon \to 0^+} \left[ " + latex(expr) + r" \right]$$")
+            st.write("**Explicación detallada del cálculo**: Verificamos el comportamiento cerca de ε=0. Si hay término como 1/√ε, diverge a ∞; si converge, el límite es finito.")
+        else:  # proper
+            st.write("No se necesita límite (integral propia directa). El valor es la expresión simplificada.")
+            st.latex(r"$$" + latex(expr) + r"$$")
+        # Resultado final en display LaTeX (centrado, math real - no raw $\text{1}$)
+        st.latex(r"$$\text{Resultado del Límite: } " + latex(res) + r"$$")
 
         # Paso 5: Análisis de convergencia con detalle
         st.write("**Paso 5: Análisis de Convergencia**")
@@ -151,7 +189,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.write(
                 "**Explicación detallada**: El límite existe y es finito, por lo que el área bajo la curva es acotada (limitada). Esto implica que la función decae lo suficientemente rápido (ej. como $1/x^2$ o mejor)."
             )
-            # *** FIX: Success profesional + confetti leve (JS canvas-confetti, sutil 3 seg) ***
+            # *** FIX: Success profesional + confetti leve (20 copos, speed media – sutil, dura 2-3 seg) ***
             st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
             st.info("Usa los pasos arriba para entender el proceso matemático.")
             st.markdown(""" 
@@ -180,7 +218,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             f"❌ Error en el cálculo: {str(e)}. Tips: Usa 'x' como variable, '**' para potencias (ej. x**2), 'oo' para $\\infty$. Ejemplo: 1/x**2."
         )
 
-
 # *** ADICIÓN: Sidebar mejorada (más creativa con selectbox y tips) ***
 with st.sidebar:
     st.header("🎛️ Panel de Control Creativo")
@@ -198,109 +235,4 @@ with st.sidebar:
     modo = st.selectbox("🌟 Modo de Visualización",
                         ["Estándar", "Avanzado (con Gráfica Auto)"],
                         index=0)
-    if modo == "Avanzado (con Gráfica Auto)":
-        st.checkbox("Activar gráfica automática al resolver", value=True)
-
-# *** ADICIÓN: Tabs para organización creativa (Inputs | Ejemplos) ***
-tab1, tab2 = st.tabs(["🚀 Resolver Manual", "🧪 Ejemplos Rápidos"])
-
-with tab1:
-    # *** CAMBIO: Inputs todos como text_input para flexibilidad total ***
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
-        f_expr = st.text_input("🔢 f(x):",
-                               value="1/x**2",
-                               help="Ej: 1/x**2 | Escribe libremente")
-    with col2:
-        a_lim = st.text_input(
-            "📏 a (inferior):",
-            value="1",
-            help="Ej: 0 (singularidad), 1, o cualquier número")
-    with col3:
-        b_lim = st.text_input("📏 b (superior):",
-                              value="oo",
-                              help="Ej: oo (infinito), 1, o cualquier número")
-
-    # *** ADICIÓN: Barra de progreso para simular cálculo (wow) ***
-    progress_bar = st.progress(0)
-    if st.button("🔍 Resolver con Detalle Completo", type="primary"):
-        for i in range(100):
-            progress_bar.progress(i + 1)
-            # Simula carga
-        # *** FIX: Guarda datos en session_state para gráfica persistente ***
-        st.session_state.saved_f = f_expr
-        st.session_state.saved_a = a_lim
-        st.session_state.saved_b = b_lim
-        resolver_integral(f_expr, a_lim, b_lim)
-        # *** ADICIÓN: Auto gráfica si modo avanzado ***
-        if modo == "Avanzado (con Gráfica Auto)":
-            st.session_state.show_graph = True
-
-    # *** FIX NUEVO: Checkbox persistente para gráfica (usa session_state, fuera de función) ***
-    st.session_state.show_graph = st.checkbox(
-        "📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)",
-        value=st.session_state.show_graph,
-        key="graph_checkbox"
-    )
-    # *** FIX: Bloque de gráfica movido aquí (genera con datos guardados si checkbox marcado) ***
-    if st.session_state.show_graph and st.session_state.saved_f != "":
-        try:
-            x = Symbol('x')
-            f = sp.sympify(st.session_state.saved_f)
-            a = sp.sympify(st.session_state.saved_a)
-            b = sp.sympify(st.session_state.saved_b)
-            fig, ax = plt.subplots(figsize=(10, 6))
-            # Manejo seguro de start/end para la gráfica
-            try:
-                start = 0.01 if a == 0 else float(a)
-            except Exception:
-                start = 0.01
-            try:
-                end = 10.0 if b == oo else float(b)
-            except Exception:
-                end = 10.0
-
-            x_vals = np.linspace(start, end, 200)
-            # *** FIX: Cambié a lambdify para evaluar f(x) numéricamente (evita errores en subs, gráfica siempre sale) ***
-            try:
-                f_np = lambdify(x, f, 'numpy')
-                y_vals = f_np(x_vals)
-            except Exception as e:
-                st.error(f"❌ Error en gráfica: {e}. Usando valores aproximados.")
-                y_vals = np.zeros_like(x_vals)  # Fallback si falla
-
-            ax.plot(x_vals,
-                    y_vals,
-                    label=f"f(x) = {st.session_state.saved_f}",
-                    color='#3b82f6',
-                    linewidth=2)
-            # *** ADICIÓN: Sombreado para área bajo la curva (wow visual) ***
-            ax.fill_between(x_vals,
-                            0,
-                            y_vals,
-                            alpha=0.3,
-                            color='#3b82f6',
-                            label='Área aproximada')
-            ax.axvline(start,
-                       color='r',
-                       linestyle='--',
-                       label=f'Límite inferior: {a}',
-                       linewidth=2)
-            if b != oo:
-                ax.axvline(end,
-                           color='g',
-                           linestyle='--',
-                           label=f'Límite superior: {b}',
-                           linewidth=2)
-            ax.set_title(
-                "🔍 Gráfica Interactiva: Visualiza el Área de la Integral",
-                fontsize=16,
-                color='#1e3a8a')
-            ax.set_xlabel("x", fontsize=12)
-            ax.set_ylabel("f(x)", fontsize=12)
-            ax.legend(fontsize=10)
-            ax.grid(True, alpha=0.3)
-            st.pyplot(fig)
-            plt.close(fig)  # *** FIX: Agregué close para limpiar memoria en cloud ***
-        except Exception as e:
-            st.error(f"❌ Error al generar gráfica: {e}. Verifica función simple.")
+    if
