@@ -25,11 +25,27 @@ st.set_page_config(
 
 st.markdown("""
     <style>
+    /* Estilos de fondo y contenedores (Tema Claro) */
     .main {background-color: #f0f8ff;}
     .stApp {background-color: #f0f8ff;}
     .sidebar .sidebar-content {background-color: #e6f3ff;}
+    
+    /* Estilos de encabezado y botones */
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
+    
+    /* --- FIX DE CONTRASTE PARA MODO OSCURO --- */
+    /* Asegura que el texto de las etiquetas y la barra lateral sea oscuro para alto contraste */
+    .stTextInput label, .stCheckbox label, .sidebar .sidebar-content * {
+        color: #1e3a8a !important; 
+    }
+    
+    /* Asegura que el texto dentro de los campos de entrada también sea oscuro */
+    .stTextInput input {
+        color: #1e3a8a !important;
+        background-color: white !important; /* Asegurar fondo blanco en el campo */
+    }
+    /* ------------------------------------------- */
     </style>
 """, unsafe_allow_html=True)
 
