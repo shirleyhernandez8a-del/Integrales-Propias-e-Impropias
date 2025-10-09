@@ -258,21 +258,41 @@ with tab1:
             fig, ax = plt.subplots(figsize=(10, 6))
             # Manejo seguro de start/end para la gráfica
             try:
-                start = 0.01 if a == 0 else float(a)
+                # Si el límite inferior es infinito negativo, ajustamos el inicio
+                start = -10.0 if a == -oo else (0.01 if a == 0 else float(a))
             except Exception:
                 start = 0.01
             try:
+                # Si el límite superior es infinito positivo, ajustamos el final
                 end = 10.0 if b == oo else float(b)
             except Exception:
                 end = 10.0
 
+            # Aseguramos que 'start' sea menor que 'end'
+            if start >= end:
+                end = start + 5.0
+
             x_vals = np.linspace(start, end, 200)
-            # Evaluar f(x) numéricamente con lambdify
+            
+            # Evaluar f(x) numéricamente con lambdify y manejo robusto de errores
             try:
                 f_np = lambdify(x_sym, f, 'numpy')
-                y_vals = f_np(x_vals)
+                y_vals_raw = f_np(x_vals)
+
+                # --- FIX: Manejo Robusto para Gráficas (Evita errores de Dominio/Números Complejos) ---
+                # 1. Convertir a valores reales (esencial para funciones como sqrt o log)
+                y_vals = np.real(y_vals_raw)
+
+                # 2. Reemplazar valores no finitos (NaN/Inf) con NaN para que Matplotlib no dibuje líneas
+                y_vals[~np.isfinite(y_vals)] = np.nan
+
+                # 3. Limitar valores extremos para una gráfica legible (clipping)
+                max_y_limit = 100.0
+                y_vals = np.clip(y_vals, -max_y_limit, max_y_limit)
+                # -----------------------------------------------------------------------------------
+
             except Exception as e:
-                st.error(f"❌ Error en gráfica: {e}. Usando valores aproximados.")
+                st.error(f"❌ Error de Dominio en Gráfica: {e}. Esto sucede cuando la función (ej. sqrt) se evalúa fuera de su dominio. Mostrando solo el eje.")
                 y_vals = np.zeros_like(x_vals) # Fallback
 
             ax.plot(x_vals,
@@ -306,6 +326,9 @@ with tab1:
             ax.set_ylabel("f(x)", fontsize=12)
             ax.legend()
             ax.grid(True, alpha=0.3)
+            # Ajustar el límite y para que el eje x se vea bien
+            ax.set_ylim(min(0, np.nanmin(y_vals) if np.nanmin(y_vals) != np.nan else -1), 
+                        max(0, np.nanmax(y_vals) if np.nanmax(y_vals) != np.nan else 1))
             st.pyplot(fig)
             plt.close(fig)
         except Exception as e:
