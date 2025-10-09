@@ -322,4 +322,31 @@ with tab2:
     col_ej1, col_ej2, col_ej3 = st.columns(3)
     with col_ej1:
         with st.expander("Ej1: ∫ 1/x² dx de 1 a ∞ (Converge)"):
-            st.write("**Función**: 1/x² | **Límites**: a
+            st.write("**Función**: 1/x² | **Límites**: a=1, b=∞")
+            if st.button("Resolver Ejemplo 1", key="ej1"):
+                st.session_state.saved_f = "1/x**2"
+                st.session_state.saved_a = "1"
+                st.session_state.saved_b = "oo"
+                resolver_integral("1/x**2", "1", "oo")
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
+    with col_ej2:
+        with st.expander("Ej2: ∫ 1/√x dx de 0 a 1 (Singular, Converge)"):
+            st.write("**Función**: 1/√x | **Límites**: a=0, b=1")
+            if st.button("Resolver Ejemplo 2", key="ej2"):
+                st.session_state.saved_f = "1/sqrt(x)"
+                st.session_state.saved_a = "0"
+                st.session_state.saved_b = "1"
+                resolver_integral("1/sqrt(x)", "0", "1")
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
+    with col_ej3:
+        with st.expander("Ej3: ∫ 1/x dx de 1 a ∞ (Diverge)"):
+            st.write("**Función**: 1/x | **Límites**: a=1, b=∞")
+            if st.button("Resolver Ejemplo 3", key="ej3"):
+                st.session_state.saved_f = "1/x"
+                st.session_state.saved_a = "1"
+                st.session_state.saved_b = "oo"
+                resolver_integral("1/x", "1", "oo")
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
