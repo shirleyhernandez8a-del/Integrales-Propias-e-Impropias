@@ -57,9 +57,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.markdown(
                 "Esta es una integral impropia por **límite infinito superior**. Se resuelve como:"
             )
-            st.latex(
-                r"$$\int_a^\infty f(x) \, dx = \lim_{t \to \infty} \int_a^t f(x) \, dx$$"
-            )
+           st.latex(r"\int_a^\infty f(x) \, dx = \lim_{t \to \infty} \int_a^t f(x) \, dx")
             st.write(
                 "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \to \infty$."
             )
@@ -68,9 +66,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.markdown(
                 "Esta es una integral impropia por **singularidad en el límite inferior** (ej. discontinuidad en $x=0$). Se resuelve como:"
             )
-            st.latex(
-                r"$$\int_0^b f(x) \, dx = \lim_{\epsilon \to 0^+} \int_\epsilon^b f(x) \, dx$$"
-            )
+            st.latex(r"\int_0^b f(x) \, dx = \lim_{\epsilon \to 0^+} \int_\epsilon^b f(x) \, dx")
             st.write(
                 "**Explicación detallada**: Evitamos la singularidad acercándonos a 0 desde la derecha."
             )
@@ -97,10 +93,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         )
 
         F = sp.integrate(f, x)
-        st.latex(
-            f"F(x) = {latex(F)} + C \\quad \\text{{(donde C es constante, pero se cancela en límites)}}"
-        )
-
+        st.latex(latex(F) + r" + C \quad \text{(donde C es constante, pero se cancela en límites)}")
         st.write("**Paso 3: Evaluar la Integral Definida Usando el Teorema Fundamental**")
         if mode == "infinite_upper":
             st.write("Evaluamos: $[F(t) - F(a)]$ y tomamos $\lim_{t\\to\\infty}$")
@@ -108,15 +101,15 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             F_t = F.subs(x, t)
             F_a = F.subs(x, a)
             st.write("**Subpaso 3.1: Sustituir en la antiderivada para el límite superior variable (t)**")
-            st.latex(r"$$F(t) = " + latex(F_t) + r"$$")
+            st.latex(latex(F_t))
             st.write("**Explicación**: Reemplazamos x = t en F(x) para obtener el valor en el límite superior.")
             st.write("**Subpaso 3.2: Sustituir en la antiderivada para el límite inferior fijo (a)**")
-            st.latex(r"$$F(a) = " + latex(F_a) + r"$$")
+            st.latex(latex(F_a))
             st.write("**Explicación**: Reemplazamos x = a en F(x) para obtener el valor en el límite inferior.")
             st.write("**Subpaso 3.3: Aplicar el Teorema Fundamental - Restar para formar la expresión de la integral**")
             st.write("Por el Teorema Fundamental del Cálculo, la integral definida es la diferencia de la antiderivada en los límites.")
             expr = F_t - F_a
-            st.latex(r"$$\int_a^t f(x) \, dx = F(t) - F(a) = " + latex(expr) + r"$$")
+            st.latex(r"\int_a^t f(x) \, dx = F(t) - F(a) = " + latex(expr))
             res = limit(expr, t, oo)
         elif mode == "singular_lower":
             st.write("Evaluamos: $[F(b) - F(\epsilon)]$ y tomamos $\lim_{\epsilon\\to 0^+}$")
@@ -124,46 +117,45 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             F_b = F.subs(x, b)
             F_epsilon = F.subs(x, epsilon)
             st.write("**Subpaso 3.1: Sustituir en la antiderivada para el límite superior fijo (b)**")
-            st.latex(r"$$F(b) = " + latex(F_b) + r"$$")
+            st.latex(latex(F_b))
             st.write("**Explicación**: Reemplazamos x = b en F(x).")
             st.write("**Subpaso 3.2: Sustituir en la antiderivada para el límite inferior variable (ε)**")
-            st.latex(r"$$F(\epsilon) = " + latex(F_epsilon) + r"$$")
+            st.latex(latex(F_epsilon))
             st.write("**Explicación**: Reemplazamos x = ε para evitar la singularidad en 0.")
             st.write("**Subpaso 3.3: Aplicar el Teorema Fundamental - Restar para formar la expresión**")
             st.write("La integral de ε a b es F(b) - F(ε).")
             expr = F_b - F_epsilon
-            st.latex(r"$$\int_\epsilon^b f(x) \, dx = F(b) - F(\epsilon) = " + latex(expr) + r"$$")
+            st.latex(r"\int_\epsilon^b f(x) \, dx = F(b) - F(\epsilon) = " + latex(expr))
             res = limit(expr, epsilon, 0, dir='+')
         else:
             st.write("Evaluamos: $F(b) - F(a)$ (integral propia, sin límites variables)")
             F_b = F.subs(x, b)
             F_a = F.subs(x, a)
             st.write("**Subpaso 3.1: Sustituir en la antiderivada para el límite superior (b)**")
-            st.latex(r"$$F(b) = " + latex(F_b) + r"$$")
+            st.latex(latex(F_b))
             st.write("**Explicación**: Reemplazamos x = b en F(x).")
             st.write("**Subpaso 3.2: Sustituir en la antiderivada para el límite inferior (a)**")
-            st.latex(r"$$F(a) = " + latex(F_a) + r"$$")
+            st.latex(latex(F_a))
             st.write("**Explicación**: Reemplazamos x = a en F(x).")
             st.write("**Subpaso 3.3: Aplicar el Teorema Fundamental - Restar para el valor exacto**")
             st.write("No hay singularidad ni infinito, así que la resta da el resultado directo.")
             expr = F_b - F_a
-            st.latex(r"$$\int_a^b f(x) \, dx = F(b) - F(a) = " + latex(expr) + r"$$")
+            st.latex(r"\int_a^b f(x) \, dx = F(b) - F(a) = " + latex(expr))
             res = sp.simplify(expr)
 
         st.write("**Paso 4: Calcular el Límite**")
         if mode == "infinite_upper":
             st.write("Tomamos el límite de la expresión cuando $t \\to \\infty$.")
-            st.latex(r"$$\lim_{t \to \infty} \left[ " + latex(expr) + r" \right]$$")
+            st.latex(r"\lim_{t \to \infty} \left[ " + latex(expr) + r" \right]")
             st.write("**Explicación detallada del cálculo**: Analizamos término por término. Los constantes quedan iguales, y los términos que crecen con t (o dependen de 1/t) tienden a 0 si la función decae rápido (ej. para 1/x², 1/t → 0 cuando t → ∞, así que queda el valor constante).")
         elif mode == "singular_lower":
             st.write("Tomamos el límite de la expresión cuando $\\epsilon \\to 0^+$.")
-            st.latex(r"$$\lim_{\epsilon \to 0^+} \left[ " + latex(expr) + r" \right]$$")
+            st.latex(r"\lim_{\epsilon \to 0^+} \left[ " + latex(expr) + r" \right]")
             st.write("**Explicación detallada del cálculo**: Verificamos el comportamiento cerca de ε=0. Si hay término como 1/√ε, diverge a ∞; si converge, el límite es finito.")
         else:
             st.write("No se necesita límite (integral propia directa). El valor es la expresión simplificada.")
-            st.latex(r"$$" + latex(expr) + r"$$")
-        st.latex(r"$$\text{Resultado del Límite: } " + latex(res) + r"$$")
-
+            st.latex(latex(expr))
+        st.latex(r"\text{Resultado del Límite: } " + latex(res))
         st.write("**Paso 5: Análisis de Convergencia**")
         if res.is_finite:
             st.success(
