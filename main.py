@@ -231,8 +231,4 @@ with st.sidebar:
         "**Tip Pro**: Escribe libremente en los campos (ej. 'oo' para ∞). ¡La gráfica shaded muestra el 'área' que converge!"
     )
 
-    # *** ADICIÓN: Selector de 'modo' para más interactividad ***
-    modo = st.selectbox("🌟 Modo de Visualización",
-                        ["Estándar", "Avanzado (con Gráfica Auto)"],
-                        index=0)
-    if
+    # ***
