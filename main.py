@@ -34,9 +34,11 @@ st.markdown("""
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
     
-    /* --- FIX DE CONTRASTE PARA MODO OSCURO --- */
-    /* Asegura que el texto de las etiquetas y la barra lateral sea oscuro para alto contraste */
-    .stTextInput label, .stCheckbox label, .sidebar .sidebar-content * {
+    /* --- FIX DE CONTRASTE PARA MODO OSCURO (V2: Incluye Resultados, Subtítulos y LaTeX) --- */
+    
+    /* Asegura que el texto de las etiquetas, la barra lateral, y el texto general sea oscuro para alto contraste */
+    .stTextInput label, .stCheckbox label, .sidebar .sidebar-content *,
+    .stApp p, .stApp h2, .stApp h3 {
         color: #1e3a8a !important; 
     }
     
@@ -45,7 +47,17 @@ st.markdown("""
         color: #1e3a8a !important;
         background-color: white !important; /* Asegurar fondo blanco en el campo */
     }
-    /* ------------------------------------------- */
+
+    /* Fix para el texto de las fórmulas LaTeX (que usa la librería Katex) */
+    .katex-display .base {
+        color: #000000 !important; /* Negro puro para máximo contraste en las fórmulas */
+    }
+    
+    /* Fix para los tooltips y los mensajes de éxito/error, permitiéndoles usar sus colores por defecto */
+    .stAlert p, .stAlert h3, .stAlert * {
+        color: initial !important; 
+    }
+    /* -------------------------------------------------------------------------------------- */
     </style>
 """, unsafe_allow_html=True)
 
