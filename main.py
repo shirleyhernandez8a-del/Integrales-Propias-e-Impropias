@@ -13,7 +13,7 @@ if "saved_f" not in st.session_state:
     st.session_state.saved_f = ""
 if "saved_a" not in st.session_state:
     st.session_state.saved_a = ""
-if "saved_b" not in st.session_state: # <--- CORREGIDO: la sintaxis estaba mal aquí
+if "saved_b" not in st.session_state:
     st.session_state.saved_b = ""
 
 st.set_page_config(
@@ -34,10 +34,10 @@ st.markdown("""
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
     
-    /* --- FIX DE CONTRASTE PARA MODO OSCURO (V3: Contraste para Alertas y Resultados) --- */
+    /* --- FIX DE CONTRASTE GENERAL --- */
     
-    /* Asegura que el texto general (etiquetas, barra lateral, subtítulos, párrafos) sea oscuro */
-    .stTextInput label, .stCheckbox label, .sidebar .sidebar-content *,
+    /* Asegura que el texto general del CUERPO (etiquetas, subtítulos, párrafos) sea oscuro */
+    .stTextInput label, .stCheckbox label, 
     .stApp p, .stApp h2, .stApp h3 {
         color: #1e3a8a !important; 
     }
@@ -53,9 +53,28 @@ st.markdown("""
         color: #000000 !important; /* Negro puro para máximo contraste en las fórmulas */
     }
     
-    /* Fuerza el color del texto dentro de todas las cajas de alerta (st.info, st.success, st.error) a azul oscuro para alto contraste */
+    /* Fuerza el color del texto dentro de TODAS las cajas de alerta (st.info, st.success, st.error) */
+    /* En el cuerpo principal será oscuro para contrastar con los fondos claros de la alerta */
     .stAlert p, .stAlert h3, .stAlert * {
-        color: #1e3a8a !important; /* Color oscuro */
+        color: #1e3a8a !important; /* Azul oscuro para alto contraste */
+    }
+    
+    /* --- FIX V4: Mejorar contraste en la BARRA LATERAL para el Tema Oscuro (Headers y texto normal) --- */
+    /* Sobreescribe el color oscuro de arriba y fuerza todo el texto de la sidebar a CLARO */
+    .sidebar .sidebar-content h1, 
+    .sidebar .sidebar-content h2, 
+    .sidebar .sidebar-content h3, 
+    .sidebar .sidebar-content p,
+    .sidebar .sidebar-content label,
+    .sidebar .sidebar-content div[data-testid*="stMarkdownContainer"] p
+    {
+        color: #f0f8ff !important; /* Color muy claro para asegurar legibilidad en el fondo oscuro de la sidebar */
+    }
+
+    /* --- FIX ESPECÍFICO PARA EL TEXTO DEL "TIP PRO" EN LA BARRA LATERAL (st.info) --- */
+    /* Mantenemos este fix para el texto dentro del recuadro de info (st.info) que es oscuro en tema oscuro. */
+    .sidebar .stAlert p, .sidebar .stAlert h3, .sidebar .stAlert * {
+        color: #f0f8ff !important; /* Color muy claro para asegurar legibilidad en el recuadro azul oscuro */
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
@@ -85,7 +104,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.markdown(
                 "Esta es una integral impropia por **límite infinito superior**. Se resuelve como:"
             )
-            # Indentación corregida aquí (la línea que causó el error)
             st.latex(r"\int_a^\infty f(x) \, dx = \lim_{t \to \infty} \int_a^t f(x) \, dx")
             st.write(
                 "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \\to \infty$."
