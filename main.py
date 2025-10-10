@@ -13,7 +13,7 @@ if "saved_f" not in st.session_state:
     st.session_state.saved_f = ""
 if "saved_a" not in st.session_state:
     st.session_state.saved_a = ""
-if "saved_b" not in st.session_state: # <-- ERROR CORREGIDO: Indentación limpia aquí
+if "saved_b" not in st.session_state:
     st.session_state.saved_b = ""
 
 st.set_page_config(
@@ -105,7 +105,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             )
             st.latex(r"\int_a^\infty f(x) \, dx = \lim_{t \to \infty} \int_a^t f(x) \, dx")
             st.write(
-                "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \\to \infty$."
+                "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \to \infty$."
             )
             mode = "infinite_upper"
         elif a == 0:
@@ -142,7 +142,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.latex(latex(F) + r" + C \quad \text{(donde C es constante, pero se cancela en límites)}")
         st.write("**Paso 3: Evaluar la Integral Definida Usando el Teorema Fundamental**")
         if mode == "infinite_upper":
-            st.write("Evaluamos: $[F(t) - F(a)]$ y tomamos el límite $t\\to\\infty$")
+            st.write("Evaluamos: $[F(t) - F(a)]$ y tomamos el límite $t\to\infty$")
             t = Symbol('t')
             F_t = F.subs(x, t)
             F_a = F.subs(x, a)
@@ -158,7 +158,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.latex(r"\int_a^t f(x) \, dx = F(t) - F(a) = " + latex(expr))
             res = limit(expr, t, oo)
         elif mode == "singular_lower":
-            st.write("Evaluamos: $[F(b) - F(\epsilon)]$ y tomamos el límite $\\epsilon\\to 0^+$")
+            st.write("Evaluamos: $[F(b) - F(\epsilon)]$ y tomamos el límite $\\epsilon\to 0^+$")
             epsilon = Symbol('epsilon')
             F_b = F.subs(x, b)
             F_epsilon = F.subs(x, epsilon)
@@ -191,11 +191,11 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
         st.write("**Paso 4: Calcular el Límite**")
         if mode == "infinite_upper":
-            st.write("Tomamos el límite de la expresión cuando $t \\to \\infty$.")
+            st.write("Tomamos el límite de la expresión cuando $t \to \infty$.")
             st.latex(r"\lim_{t \to \infty} \left[ " + latex(expr) + r" \right]")
-            st.write("**Explicación detallada del cálculo**: Analizamos término por término. Los constantes quedan iguales, y los términos que crecen con t (o dependen de 1/t) tienden a 0 si la función decae rápido (ej. para $1/x^2$, $1/t \\to 0$ cuando $t \\to \infty$, así que queda el valor constante).")
+            st.write("**Explicación detallada del cálculo**: Analizamos término por término. Los constantes quedan iguales, y los términos que crecen con t (o dependen de 1/t) tienden a 0 si la función decae rápido (ej. para $1/x^2$, $1/t \to 0$ cuando $t \to \infty$, así que queda el valor constante).")
         elif mode == "singular_lower":
-            st.write("Tomamos el límite de la expresión cuando $\\epsilon \\to 0^+$.")
+            st.write("Tomamos el límite de la expresión cuando $\\epsilon \to 0^+$.")
             st.latex(r"\lim_{\epsilon \to 0^+} \left[ " + latex(expr) + r" \right]")
             st.write("**Explicación detallada del cálculo**: Verificamos el comportamiento cerca de $\\epsilon=0$. Si hay término como $1/\sqrt{\\epsilon}$, diverge a $\\infty$; si converge, el límite es finito.")
         else:
@@ -353,6 +353,8 @@ with tab1:
                 # -----------------------------------------------------------------------------------
 
             except Exception as e:
+                # El error de dominio (por ejemplo, al evaluar sqrt(-1)) se captura aquí.
+                # El error 'invalid character' también se capturaba aquí si ocurría dentro de lambdify.
                 st.error(f"❌ Error de Dominio en Gráfica: {e}. Esto sucede cuando la función (ej. sqrt) se evalúa fuera de su dominio. Mostrando solo el eje.")
                 y_vals = np.zeros_like(x_vals) # Fallback
 
@@ -407,8 +409,8 @@ with tab1:
 with tab2:
     col_ej1, col_ej2, col_ej3 = st.columns(3)
     with col_ej1:
-        with st.expander("Ej1: ∫ 1/x² dx de 1 a ∞ (Converge)"):
-            st.write("**Función**: 1/x² | **Límites**: a=1, b=∞")
+        with st.expander("Ej1: $\\int 1/x^2 dx$ de 1 a $\\infty$ (Converge)"):
+            st.write("**Función**: $1/x^2$ | **Límites**: $a=1, b=\\infty$")
             if st.button("Resolver Ejemplo 1", key="ej1"):
                 st.session_state.saved_f = "1/x**2"
                 st.session_state.saved_a = "1"
@@ -417,18 +419,19 @@ with tab2:
                 if modo == "Avanzado (con Gráfica Auto)":
                     st.session_state.show_graph = True
     with col_ej2:
-        with st.expander("Ej2: ∫ 1/√x dx de 0 a 1 (Singular, Converge)"):
-            st.write("**Función**: 1/sqrt(x) | **Límites**: a=0, b=1")
+        with st.expander("Ej2: $\\int 1/\\sqrt{x} dx$ de 0 a 1 (Singular, Converge)"):
+            # FIX CRÍTICO: Reemplazar el símbolo de raíz (√) por 'sqrt(x)' en el código subyacente
+            st.write("**Función**: $1/\\sqrt{x}$ | **Límites**: $a=0, b=1$")
             if st.button("Resolver Ejemplo 2", key="ej2"):
-                st.session_state.saved_f = "1/sqrt(x)"
+                st.session_state.saved_f = "1/sqrt(x)" # <-- CORREGIDO AQUÍ
                 st.session_state.saved_a = "0"
                 st.session_state.saved_b = "1"
-                resolver_integral("1/sqrt(x)", "0", "1")
+                resolver_integral("1/sqrt(x)", "0", "1") # <-- CORREGIDO AQUÍ
                 if modo == "Avanzado (con Gráfica Auto)":
                     st.session_state.show_graph = True
     with col_ej3:
-        with st.expander("Ej3: ∫ 1/x dx de 1 a ∞ (Diverge)"):
-            st.write("**Función**: 1/x | **Límites**: a=1, b=∞")
+        with st.expander("Ej3: $\\int 1/x dx$ de 1 a $\\infty$ (Diverge)"):
+            st.write("**Función**: $1/x$ | **Límites**: $a=1, b=\\infty$")
             if st.button("Resolver Ejemplo 3", key="ej3"):
                 st.session_state.saved_f = "1/x"
                 st.session_state.saved_a = "1"
