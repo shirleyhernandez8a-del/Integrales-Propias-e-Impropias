@@ -53,8 +53,8 @@ st.markdown("""
         color: #1e3a8a !important; 
     }
 
-    /* 2. BARRA LATERAL - Asegurar texto CLARO (BLANCO) sobre fondo oscuro */
-    /* --- FIX CRÍTICO V4: Forzar el color blanco/claro (#f0f8ff) a TODOS los textos de la Sidebar --- */
+    /* 2. BARRA LATERAL - FIX CRÍTICO V5: Forzar el color a azul oscuro para asegurar visibilidad en Ligh Mode 
+       (donde el usuario ve "blanco sobre blanco"). Esto también asegura que el texto coincida con el cuerpo principal. */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
@@ -62,12 +62,13 @@ st.markdown("""
     .sidebar .sidebar-content label,
     .sidebar .sidebar-content div[data-testid*="stMarkdownContainer"] *,
     .sidebar .sidebar-content div[data-testid*="stHeader"] *,
+    /* Mantenemos el color oscuro para las alertas en la barra lateral, para que el contraste sea correcto */
     .sidebar .sidebar-content .stAlert p, 
     .sidebar .sidebar-content .stAlert h3, 
     .sidebar .sidebar-content .stAlert *
     {
-        /* Usamos #f0f8ff (blanco azulado) para un mejor look, pero esencialmente es CLARO */
-        color: #f0f8ff !important; 
+        /* Forzamos color azul oscuro (el mismo que el cuerpo principal) */
+        color: #1e3a8a !important; 
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
