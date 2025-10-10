@@ -13,7 +13,8 @@ if "saved_f" not in st.session_state:
     st.session_state.saved_f = ""
 if "saved_a" not in st.session_state:
     st.session_state.saved_a = ""
-if "saved_b" not in st.session_state.saved_b = ""
+if "saved_b" not in st.session_state: # <--- CORREGIDO: la sintaxis estaba mal aquí
+    st.session_state.saved_b = ""
 
 st.set_page_config(
     page_title="Solver de Integrales Impropias Detallado",
