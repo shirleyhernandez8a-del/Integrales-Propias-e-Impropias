@@ -84,7 +84,7 @@ st.markdown(
     "<h1 style='text-align: center; color: #1e3a8a;'>🧮 Solver de Integrales Impropias - Paso a Paso Detallado</h1>",
     unsafe_allow_html=True)
 st.markdown(
-    "<p style='text-align: center; color: #4b5563; font-size: 18px;'>Ingresa la función y límites. La app explica **cada subpaso** antes de la respuesta final: tipo, cálculo de antiderivada, evaluación del límite y análisis de convergencia. ¡Visualiza el área y converge a la excelencia! 🎓</p>",
+    "<p style='text-align: center; color: #4b5563; font-size: 18px;'>Ingresa la función y límites. La app explica **cada subpaso** antes de la respuesta final: tipo, cálculo de antiderivada, evaluación del límite y análisis de convergencia. ¡Visualiza el área y confirma la convergencia! 🎓</p>",
     unsafe_allow_html=True)
 st.markdown("---")
 
@@ -218,7 +218,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             analysis_notes.append("Si una de las dos partes diverge, la integral completa **DIVERGE**.")
         elif mode == "infinite_both":
             analysis_notes.append("Esta es una integral impropia por **límite infinito doble** ($-\infty$ a $\infty$).")
-            analysis_notes.append("Se resuelve dividiendo en dos integrales en un punto arbitrario $c$ (usaremos $c=0$ por simplicidad):")
+            analysis_notes.append("Se resuelve dividiendo en dos integrales en un punto arbitrario $c$ (usamos $c=0$ por simplicidad):")
             st.latex(r"\int_{-\infty}^{\infty} f(x) \, dx = \lim_{t_1 \to -\infty} \int_{t_1}^{0} f(x) \, dx + \lim_{t_2 \to \infty} \int_{0}^{t_2} f(x) \, dx")
             analysis_notes.append("Si una de las dos partes diverge, la integral completa **DIVERGE**.")
         elif mode == "infinite_upper":
@@ -427,8 +427,9 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.markdown(f"**Resultado de la Parte 1 (Límite Izquierdo)**: ${latex(lim_val_1_display)}$")
                 st.markdown(f"**Resultado de la Parte 2 (Límite Derecho)**: ${latex(lim_val_2_display)}$")
                 
+                # Aclaración de signos neutra
                 if lim_val_1_display is -oo and lim_val_2_display is oo:
-                     st.info("⚠️ **Aclaración de Signos (Confirma a tu Lic.)**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$. Al menos una de las partes es infinita, lo que causa la divergencia total. Tu Lic. se refería al límite positivo, y el sistema a la parte negativa. Ambos indican **DIVERGENCIA**.")
+                     st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$. Como al menos una de las partes es infinita, la integral total **DIVERGE**.")
                 else:
                     st.write(f"El resultado del límite divergente fue: ${latex(final_res_clean)}$")
 
@@ -465,17 +466,17 @@ with st.sidebar:
     st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
     
     # ----------------------------------------------------------------------------------
-    # CORRECCIÓN FINAL: Se usan solo caracteres Unicode y Markdown simple en el Tip Pro.
+    # Tip Pro ajustado para sonar más como una nota personal.
     # ----------------------------------------------------------------------------------
     st.markdown(
         f"""
         <div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>
-        💡 <strong>Tip Pro: Lógica del Solver</strong>
-        <br>1. La app identifica si es **Propia** o **Impropia** (y su tipo).
-        <br>2. Se calcula la **Antiderivada** $F(x)$.
-        <br>3. Se aplica el **Límite** correspondiente (a $t \to \infty$ o $\epsilon \to a^+$) de forma **explícita**.
+        💡 <strong>Nota del Desarrollador</strong>
+        <br>1. El sistema identifica si es **Propia** o **Impropia** (y el tipo).
+        <br>2. Primero se calcula la **Antiderivada** $F(x)$.
+        <br>3. Luego se aplica el **Límite** correspondiente (a $t$ o $\epsilon$) de forma **explícita**.
         <br>4. La **convergencia** se declara solo si el límite final es **finito**.
-        <br>5. La **ROBUSTEZ** de la respuesta final está garantizada por SymPy.
+        <br>5. La respuesta final está **validada con SymPy** para máxima confianza.
         </div>
         """,
         unsafe_allow_html=True
