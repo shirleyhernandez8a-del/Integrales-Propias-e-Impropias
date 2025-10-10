@@ -268,16 +268,16 @@ with st.sidebar:
     st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **sqrt(x)** para $\\sqrt{x}$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
     
     # ----------------------------------------------------------------------------------
-    # NUEVO CONTENIDO PARA EL TIP PRO: Se enfoca en la lógica del solver, no en la sintaxis.
+    # CORRECCIÓN FINAL: Se usan solo caracteres Unicode y Markdown simple en el Tip Pro.
     # ----------------------------------------------------------------------------------
     st.markdown(
-        """
+        f"""
         <div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>
         💡 <strong>Tip Pro: Lógica del Solver</strong>
         <br>1. La app resuelve la integral mediante el **Teorema Fundamental del Cálculo** y luego aplica el **límite**.
-        <br>2. Para límites infinitos ($\infty$), usa una variable **t** y evalúa $\lim_{t \to \infty}$.
-        <br>3. Para singularidades (discontinuidad en el límite, ej. en 0), usa una variable **&epsilon;** y evalúa $\lim_{\epsilon \to 0^+}$.
-        <br>4. La **convergencia** se declara solo si el límite final es un valor **finito** (no $\infty$).
+        <br>2. Para límites infinitos ({'\u221e'}), usa una variable **t** y evalúa **Lím t → {'\u221e'}**.
+        <br>3. Para singularidades (discontinuidad en el límite, ej. en 0), usa una variable **&epsilon;** y evalúa **Lím &epsilon; → 0⁺**.
+        <br>4. La **convergencia** se declara solo si el límite final es un valor **finito** (no {'\u221e'}).
         </div>
         """,
         unsafe_allow_html=True
