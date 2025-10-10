@@ -13,7 +13,7 @@ if "saved_f" not in st.session_state:
     st.session_state.saved_f = ""
 if "saved_a" not in st.session_state:
     st.session_state.saved_a = ""
-if "saved_b" not in st.session_state:
+if "saved_b" not in st.session_state: # <-- ERROR CORREGIDO: Indentación limpia aquí
     st.session_state.saved_b = ""
 
 st.set_page_config(
@@ -54,7 +54,7 @@ st.markdown("""
     }
 
     /* 2. BARRA LATERAL - FIX CRÍTICO: Forzar el color a azul claro vibrante (#1E90FF)
-       para asegurar visibilidad y consistencia con el cuerpo principal en dark mode. */
+        para asegurar visibilidad y consistencia con el cuerpo principal en dark mode. */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
@@ -105,7 +105,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             )
             st.latex(r"\int_a^\infty f(x) \, dx = \lim_{t \to \infty} \int_a^t f(x) \, dx")
             st.write(
-                "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \\to \\infty$."
+                "**Explicación detallada**: Evaluaremos F(t)-F(a) y tomaremos el límite $t \\to \infty$."
             )
             mode = "infinite_upper"
         elif a == 0:
@@ -436,5 +436,3 @@ with tab2:
                 resolver_integral("1/x", "1", "oo")
                 if modo == "Avanzado (con Gráfica Auto)":
                     st.session_state.show_graph = True
-
-# Fin del archivo
