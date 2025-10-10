@@ -34,9 +34,9 @@ st.markdown("""
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
     
-    /* --- FIX DE CONTRASTE PARA MODO OSCURO (V2: Incluye Resultados, Subtítulos y LaTeX) --- */
+    /* --- FIX DE CONTRASTE PARA MODO OSCURO (V3: Contraste para Alertas y Resultados) --- */
     
-    /* Asegura que el texto de las etiquetas, la barra lateral, y el texto general sea oscuro para alto contraste */
+    /* Asegura que el texto general (etiquetas, barra lateral, subtítulos, párrafos) sea oscuro */
     .stTextInput label, .stCheckbox label, .sidebar .sidebar-content *,
     .stApp p, .stApp h2, .stApp h3 {
         color: #1e3a8a !important; 
@@ -53,9 +53,9 @@ st.markdown("""
         color: #000000 !important; /* Negro puro para máximo contraste en las fórmulas */
     }
     
-    /* Fix para los tooltips y los mensajes de éxito/error, permitiéndoles usar sus colores por defecto */
+    /* MODIFICACIÓN CLAVE: Fuerza el color del texto dentro de todas las cajas de alerta (st.info, st.success, st.error) a azul oscuro para alto contraste */
     .stAlert p, .stAlert h3, .stAlert * {
-        color: initial !important; 
+        color: #1e3a8a !important; /* Nuevo color oscuro */
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
