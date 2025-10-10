@@ -13,8 +13,7 @@ if "saved_f" not in st.session_state:
     st.session_state.saved_f = ""
 if "saved_a" not in st.session_state:
     st.session_state.saved_a = ""
-if "saved_b" not in st.session_state:
-    st.session_state.saved_b = ""
+if "saved_b" not in st.session_state.saved_b = ""
 
 st.set_page_config(
     page_title="Solver de Integrales Impropias Detallado",
@@ -53,9 +52,9 @@ st.markdown("""
         color: #000000 !important; /* Negro puro para máximo contraste en las fórmulas */
     }
     
-    /* MODIFICACIÓN CLAVE: Fuerza el color del texto dentro de todas las cajas de alerta (st.info, st.success, st.error) a azul oscuro para alto contraste */
+    /* Fuerza el color del texto dentro de todas las cajas de alerta (st.info, st.success, st.error) a azul oscuro para alto contraste */
     .stAlert p, .stAlert h3, .stAlert * {
-        color: #1e3a8a !important; /* Nuevo color oscuro */
+        color: #1e3a8a !important; /* Color oscuro */
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
@@ -222,18 +221,18 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         )
 
 with st.sidebar:
-    st.header("🎛️ Panel de Control Creativo")
-    st.markdown("### 📖 Guía Rápida")
+    st.header("⚙️ Configuración y Ayuda")
+    st.markdown("### 📝 Guía de Sintaxis")
     st.write(
-        "- **f(x)**: Expresa en términos de x (ej. 1/x**2, sin(x)/x, e**(-x))."
+        "- **f(x)**: La función debe usar **x** como variable (ej. `1/x**2`, `sin(x)/x`, `e**(-x)`)."
     )
-    st.write("- **a**: Límite inferior (0 para singularidad).")
-    st.write("- **b**: Límite superior (oo para infinito).")
+    st.write("- **a**: Límite inferior (usa **0** para singularidades, o cualquier número finito).")
+    st.write("- **b**: Límite superior (usa **oo** para $+\\infty$ o cualquier número finito).")
     st.info(
-        "**Tip Pro**: Escribe libremente en los campos (ej. 'oo' para ∞). ¡La gráfica shaded muestra el 'área' que converge!"
+        "**Tip Pro**: Para infinito, usa el texto 'oo'. La **gráfica sombreada** se ajusta para mostrar el área que se está evaluando."
     )
 
-    modo = st.selectbox("🌟 Modo de Visualización",
+    modo = st.selectbox("✨ Opciones de Gráfica",
                         ["Estándar", "Avanzado (con Gráfica Auto)"],
                         index=0)
     if modo == "Avanzado (con Gráfica Auto)":
