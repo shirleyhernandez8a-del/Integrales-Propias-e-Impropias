@@ -28,13 +28,16 @@ st.markdown("""
     /* Estilos de fondo y contenedores (Tema Claro) */
     .main {background-color: #f0f8ff;}
     .stApp {background-color: #f0f8ff;}
-    .sidebar .sidebar-content {background-color: #e6f3ff;}
+    /* FIX CONTRASTE V5: ELIMINAR fondo fijo en sidebar para permitir tema oscuro nativo */
+    .sidebar .sidebar-content {
+        /* background-color: #e6f3ff; <- ELIMINADO para dejar que Streamlit maneje el tema oscuro/claro de fondo */
+    }
     
     /* Estilos de encabezado y botones */
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
     
-    /* --- FIX DE CONTRASTE GENERAL --- */
+    /* --- FIX DE CONTRASTE GENERAL (Cuerpo Principal) --- */
     
     /* Asegura que el texto general del CUERPO (etiquetas, subtítulos, párrafos) sea oscuro */
     .stTextInput label, .stCheckbox label, 
@@ -59,22 +62,25 @@ st.markdown("""
         color: #1e3a8a !important; /* Azul oscuro para alto contraste */
     }
     
-    /* --- FIX V4: Mejorar contraste en la BARRA LATERAL para el Tema Oscuro (Headers y texto normal) --- */
-    /* Sobreescribe el color oscuro de arriba y fuerza todo el texto de la sidebar a CLARO */
+    /* --- FIX V5: Mejorar contraste en la BARRA LATERAL (Headers y texto normal) --- */
+    /* Forzamos todo el texto de la sidebar a CLARO para asegurar legibilidad sobre el fondo oscuro (Dark Mode) */
+    /* Añado un selector más agresivo para los headers de Streamlit */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
     .sidebar .sidebar-content p,
     .sidebar .sidebar-content label,
-    .sidebar .sidebar-content div[data-testid*="stMarkdownContainer"] p
+    .sidebar .sidebar-content div[data-testid*="stMarkdownContainer"] *,
+    .sidebar .sidebar-content div[data-testid*="stHeader"] *
     {
-        color: #f0f8ff !important; /* Color muy claro para asegurar legibilidad en el fondo oscuro de la sidebar */
+        color: #f0f8ff !important; /* Color muy claro (blanco azulado) para asegurar legibilidad */
+        text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); /* Sombra ligera para mejorar el borde en fondos muy claros */
     }
 
     /* --- FIX ESPECÍFICO PARA EL TEXTO DEL "TIP PRO" EN LA BARRA LATERAL (st.info) --- */
-    /* Mantenemos este fix para el texto dentro del recuadro de info (st.info) que es oscuro en tema oscuro. */
+    /* Garantiza que el texto dentro del recuadro de info (st.info) sea claro en Dark Mode */
     .sidebar .stAlert p, .sidebar .stAlert h3, .sidebar .stAlert * {
-        color: #f0f8ff !important; /* Color muy claro para asegurar legibilidad en el recuadro azul oscuro */
+        color: #f0f8ff !important; 
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
