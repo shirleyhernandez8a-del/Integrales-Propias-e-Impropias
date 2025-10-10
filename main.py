@@ -36,7 +36,7 @@ st.markdown("""
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
     
-    /* 1. CUERPO PRINCIPAL - Asegurar texto oscuro sobre fondo claro */
+    /* 1. CUERPO PRINCIPAL - Asegurar texto oscuro (#1e3a8a) sobre fondo claro */
     .stTextInput label, .stCheckbox label, 
     .stApp p, .stApp h2, .stApp h3 {
         color: #1e3a8a !important; 
@@ -53,21 +53,26 @@ st.markdown("""
         color: #1e3a8a !important; 
     }
 
-    /* 2. BARRA LATERAL - FIX CRÍTICO V5: Forzar el color a azul oscuro para asegurar visibilidad en Ligh Mode 
-       (donde el usuario ve "blanco sobre blanco"). Esto también asegura que el texto coincida con el cuerpo principal. */
+    /* 2. BARRA LATERAL - FIX CRÍTICO: Forzar el color a azul oscuro (#1e3a8a) 
+       para asegurar visibilidad y consistencia con el cuerpo principal. */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
     .sidebar .sidebar-content p,
     .sidebar .sidebar-content label,
+    /* Selector para el texto dentro de st.write y st.markdown */
     .sidebar .sidebar-content div[data-testid*="stMarkdownContainer"] *,
     .sidebar .sidebar-content div[data-testid*="stHeader"] *,
-    /* Mantenemos el color oscuro para las alertas en la barra lateral, para que el contraste sea correcto */
+    .sidebar .sidebar-content div[data-testid*="stText"] *
+    {
+        /* Forzamos color azul oscuro, igual que el cuerpo principal */
+        color: #1e3a8a !important; 
+    }
+    /* Aseguramos también el contraste de las alertas en el sidebar */
     .sidebar .sidebar-content .stAlert p, 
     .sidebar .sidebar-content .stAlert h3, 
     .sidebar .sidebar-content .stAlert *
     {
-        /* Forzamos color azul oscuro (el mismo que el cuerpo principal) */
         color: #1e3a8a !important; 
     }
     /* -------------------------------------------------------------------------------------- */
