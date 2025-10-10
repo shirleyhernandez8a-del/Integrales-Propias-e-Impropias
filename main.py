@@ -266,11 +266,15 @@ with st.sidebar:
     st.write("- **Raíces**: Usa potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$).")
     st.write("- **Infinito**: Usa **oo** para $+\\infty$.")
     st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **sqrt(x)** para $\\sqrt{x}$, **exp(x)** para $e^x$.")
-    # Reemplacé st.info por un div HTML con fondo claro y texto azul oscuro para contraste en dark mode
+    
+    # ----------------------------------------------------------------------------------
+    # RESTAURACIÓN Y CONSOLIDACIÓN DEL TIP PRO: Incluye información sobre oo, E y gráfica.
+    # ----------------------------------------------------------------------------------
     st.markdown(
-        "<div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>💡 <strong>Tip Pro</strong>: Para la constante de Euler ($e$), puedes usar **exp(1)** o **E**.</div>",
+        "<div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>💡 <strong>Tip Pro sobre Límites y Constantes</strong>:<br>1. Para el infinito ($\infty$) en los límites, usa **oo**.<br>2. Para la constante de Euler ($e$), usa **exp(1)** o **E**.<br>3. Para singularidades, puedes usar **0** como límite (ej. $\\int_0^1$).<br>4. La gráfica sombreada se ajusta automáticamente para visualizar el área que se está evaluando.</div>",
         unsafe_allow_html=True
     )
+    # ----------------------------------------------------------------------------------
 
     modo = st.selectbox("✨ Opciones de Gráfica",
                         ["Estándar", "Avanzado (con Gráfica Auto)"],
