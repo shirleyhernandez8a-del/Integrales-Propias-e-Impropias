@@ -53,25 +53,21 @@ st.markdown("""
         color: #1e3a8a !important; 
     }
 
-    /* 2. BARRA LATERAL - Asegurar texto claro sobre fondo (puede ser oscuro en Dark Mode) */
-    /* Forzamos todo el texto de la sidebar a CLARO */
+    /* 2. BARRA LATERAL - Asegurar texto CLARO (BLANCO) sobre fondo oscuro */
+    /* --- FIX CRÍTICO V4: Forzar el color blanco/claro (#f0f8ff) a TODOS los textos de la Sidebar --- */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
     .sidebar .sidebar-content p,
     .sidebar .sidebar-content label,
     .sidebar .sidebar-content div[data-testid*="stMarkdownContainer"] *,
-    .sidebar .sidebar-content div[data-testid*="stHeader"] *
-    {
-        color: #f0f8ff !important; /* Color muy claro (blanco azulado) para asegurar legibilidad */
-    }
-
-    /* --- FIX CRÍTICO V3: El texto dentro de los recuadros st.info en la BARRA LATERAL debe ser CLARO --- */
-    /* Esto soluciona la ilegibilidad que mostraste en la imagen (texto azul oscuro sobre fondo oscuro) */
+    .sidebar .sidebar-content div[data-testid*="stHeader"] *,
     .sidebar .sidebar-content .stAlert p, 
     .sidebar .sidebar-content .stAlert h3, 
-    .sidebar .sidebar-content .stAlert * {
-        color: #f0f8ff !important; /* ¡Forzado a blanco azulado! */
+    .sidebar .sidebar-content .stAlert *
+    {
+        /* Usamos #f0f8ff (blanco azulado) para un mejor look, pero esencialmente es CLARO */
+        color: #f0f8ff !important; 
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
@@ -140,7 +136,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.latex(latex(F) + r" + C \quad \text{(donde C es constante, pero se cancela en límites)}")
         st.write("**Paso 3: Evaluar la Integral Definida Usando el Teorema Fundamental**")
         if mode == "infinite_upper":
-            st.write("Evaluamos: $[F(t) - F(a)]$ y tomamos $\lim_{t\\to\\infty}$")
+            st.write("Evaluamos: $[F(t) - F(a)]$ y tomamos el límite $t\\to\\infty$")
             t = Symbol('t')
             F_t = F.subs(x, t)
             F_a = F.subs(x, a)
@@ -156,7 +152,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.latex(r"\int_a^t f(x) \, dx = F(t) - F(a) = " + latex(expr))
             res = limit(expr, t, oo)
         elif mode == "singular_lower":
-            st.write("Evaluamos: $[F(b) - F(\epsilon)]$ y tomamos $\lim_{\epsilon\\to 0^+}$")
+            st.write("Evaluamos: $[F(b) - F(\epsilon)]$ y tomamos el límite $\\epsilon\\to 0^+$")
             epsilon = Symbol('epsilon')
             F_b = F.subs(x, b)
             F_epsilon = F.subs(x, epsilon)
@@ -391,7 +387,7 @@ with tab2:
                     st.session_state.show_graph = True
     with col_ej2:
         with st.expander("Ej2: ∫ 1/√x dx de 0 a 1 (Singular, Converge)"):
-            st.write("**Función**: 1/√x | **Límites**: a=0, b=1")
+            st.write("**Función**: 1/sqrt(x) | **Límites**: a=0, b=1")
             if st.button("Resolver Ejemplo 2", key="ej2"):
                 st.session_state.saved_f = "1/sqrt(x)"
                 st.session_state.saved_a = "0"
