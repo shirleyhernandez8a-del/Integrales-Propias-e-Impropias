@@ -249,7 +249,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
         # --- CÁLCULO DE LA ANTIDERIVADA ---
         F = sp.integrate(f, x)
-        st.write("**Paso 2: Encontrar la Antiderivada Indefinida F(x)**")
+        st.write("**Paso 2: Encontrar la Antiderivada Indefinida $F(x)$**")
         st.latex(r"\int f(x) dx = F(x) = " + latex(F) + r" + C")
         st.markdown(f"**Nota**: En la integral definida, la constante $C$ se cancela.")
 
@@ -466,15 +466,15 @@ with st.sidebar:
     st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
     
     # ----------------------------------------------------------------------------------
-    # Tip Pro ajustado para sonar más como una nota personal.
+    # Tip Pro ajustado, eliminando LaTeX para F(x), t, epsilon, y límites.
     # ----------------------------------------------------------------------------------
     st.markdown(
         f"""
         <div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>
         💡 <strong>Nota del Desarrollador</strong>
         <br>1. El sistema identifica si es **Propia** o **Impropia** (y el tipo).
-        <br>2. Primero se calcula la **Antiderivada** $F(x)$.
-        <br>3. Luego se aplica el **Límite** correspondiente (a $t$ o $\epsilon$) de forma **explícita**.
+        <br>2. Primero se calcula la **Antiderivada** **F(x)**.
+        <br>3. Luego se aplica el **Límite** correspondiente (a **t** o **épsilon**).
         <br>4. La **convergencia** se declara solo si el límite final es **finito**.
         <br>5. La respuesta final está **validada con SymPy** para máxima confianza.
         </div>
