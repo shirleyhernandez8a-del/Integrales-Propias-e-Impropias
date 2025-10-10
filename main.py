@@ -166,19 +166,24 @@ def clean_divergence_result(result):
     Limpia el resultado de SymPy si es infinito y contiene términos complejos o confusos.
     Asegura que solo se muestre 'oo' o '-oo' cuando el resultado diverge.
     """
-    # Convertir a string para buscar patrones de divergencia que SymPy no simplifica
-    result_str = str(result)
-    
-    # Verificar si el resultado es infinito (SymPy lo marca como oo o Infinity)
+    # Si SymPy ya lo identificó como infinito, lo limpiamos para evitar símbolos como oo*(-1)**(1/3)
+    if result is oo:
+        return oo
+    if result is -oo:
+        return -oo
+        
+    # Verificar si el resultado es infinito, incluyendo los casos zoo (complejo infinito) o Infinity
     is_infinite = result.is_infinite
     
     # Patrones que indican divergencia negativa o compleja que debe ser simplificada a -oo
-    if is_infinite and ('-' in result_str or '(-1)' in result_str or '(-oo)' in result_str or 'zoo' in result_str):
-        # A veces, SymPy genera -oo, otras oo*(-1), o oo*(-1)**(1/3) (que es -oo).
-        # Para evitar el símbolo feo, devolvemos el símbolo limpio.
+    if is_infinite and ('-' in str(result) or '(-1)' in str(result) or '(-oo)' in str(result) or 'zoo' in str(result)):
         return -oo
     elif is_infinite:
         return oo
+        
+    # Si es NaN, es una divergencia no definida
+    if result is sp.nan:
+        return sp.nan
         
     return result
 
@@ -300,32 +305,36 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             # Parte 1: a hasta c (límite inferior t1 -> c-)
             F_c1 = F.subs(x, t1) - F.subs(x, a)
             lim_val_1 = limit(F_c1, t1, c_val, dir='-')
+            lim_val_1_display = clean_divergence_result(lim_val_1) # Se limpia el resultado aquí
             
             st.markdown(f"**Parte 1: Límite de $\\int_{{a}}^{{c}} f(x) dx$ ($c={latex(c_val)}$)**")
-            lim_val_1_display = clean_divergence_result(lim_val_1) # Se limpia el resultado aquí
-            st.latex(r"\lim_{t_1 \to " + latex(c_val) + r"^-} \left[ F(t_1) - F(" + latex(a) + r") \right] = \lim_{t_1 \to " + latex(c_val) + r"^-} \left[ \left(" + latex(F.subs(x, t1)) + r"\right) - \left(" + latex(F.subs(x, a)) + r"\right) \right]")
-            st.latex(r"\lim_{t_1 \to " + latex(c_val) + r"^-} \left[ " + latex(sp.simplify(F_c1)) + r" \right] = " + latex(lim_val_1_display))
+            st.latex(r"\lim_{t_1 \to " + latex(c_val) + r"^-} \left[ F(t_1) - F(" + latex(a) + r") \right] = " + latex(lim_val_1_display))
             
+            # Chequeo explícito de divergencia en la primera parte
+            is_div_1 = (lim_val_1_display.is_infinite or lim_val_1_display is sp.nan)
             
-            if lim_val_1_display.is_infinite or lim_val_1_display is sp.nan:
-                st.error(f"Dado que el **Límite de la Parte 1 es ${latex(lim_val_1_display)}$**, la integral **DIVERGE**.")
+            if is_div_1:
+                st.error(f"❌ **El Límite de la Parte 1 es ${latex(lim_val_1_display)}$**. La integral completa **DIVERGE**.")
                 final_res_step_by_step = lim_val_1
             else:
                 # Parte 2: c hasta b (límite superior t2 -> c+)
                 F_c2 = F.subs(x, b) - F.subs(x, t2)
                 lim_val_2 = limit(F_c2, t2, c_val, dir='+')
+                lim_val_2_display = clean_divergence_result(lim_val_2) # Se limpia el resultado aquí
 
                 st.markdown(f"**Parte 2: Límite de $\\int_{{c}}^{{b}} f(x) dx$ ($c={latex(c_val)}$)**")
-                lim_val_2_display = clean_divergence_result(lim_val_2) # Se limpia el resultado aquí
-                st.latex(r"\lim_{t_2 \to " + latex(c_val) + r"^{+}} \left[ F(" + latex(b) + r") - F(t_2) \right] = \lim_{t_2 \to " + latex(c_val) + r"^{+}} \left[ \left(" + latex(F.subs(x, b)) + r"\right) - \left(" + latex(F.subs(x, t2)) + r"\right) \right]")
-                st.latex(r"\lim_{t_2 \to " + latex(c_val) + r"^{+}} \left[ " + latex(sp.simplify(F_c2)) + r" \right] = " + latex(lim_val_2_display))
+                st.latex(r"\lim_{t_2 \to " + latex(c_val) + r"^{+}} \left[ F(" + latex(b) + r") - F(t_2) \right] = " + latex(lim_val_2_display))
                 
+                # Chequeo explícito de divergencia en la segunda parte
+                is_div_2 = (lim_val_2_display.is_infinite or lim_val_2_display is sp.nan)
 
-                if lim_val_2_display.is_infinite or lim_val_2_display is sp.nan:
-                    st.error(f"Dado que el **Límite de la Parte 2 es ${latex(lim_val_2_display)}$**, la integral **DIVERGE**.")
+                if is_div_2:
+                    st.error(f"❌ **El Límite de la Parte 2 es ${latex(lim_val_2_display)}$**. La integral completa **DIVERGE**.")
                     final_res_step_by_step = lim_val_2
                 
-                final_res_step_by_step = lim_val_1 + lim_val_2 if lim_val_1.is_finite and lim_val_2.is_finite else final_res_step_by_step
+                # Si ambos convergen, se suman
+                if not is_div_1 and not is_div_2:
+                    final_res_step_by_step = lim_val_1 + lim_val_2
 
         elif mode == "infinite_both":
             t1, t2 = Symbol('t1'), Symbol('t2')
@@ -334,34 +343,33 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             # Parte 1: -oo hasta 0 (límite inferior t1 -> -oo)
             F_inf1 = F.subs(x, 0) - F.subs(x, t1)
             lim_val_1 = limit(F_inf1, t1, -oo)
+            lim_val_1_display = clean_divergence_result(lim_val_1) # Se limpia el resultado aquí
             
             st.markdown(f"**Parte 1: Límite de $\\int_{{-\infty}}^{{0}} f(x) dx$**")
-            lim_val_1_display = clean_divergence_result(lim_val_1) # Se limpia el resultado aquí
-            st.latex(r"\lim_{t_1 \to -\infty} \left[ F(0) - F(t_1) \right] = \lim_{t_1 \to -\infty} \left[ \left(" + latex(F.subs(x, 0)) + r"\right) - \left(" + latex(F.subs(x, t1)) + r"\right) \right]")
-            st.latex(r"\lim_{t_1 \to -\infty} \left[ " + latex(sp.simplify(F_inf1)) + r" \right] = " + latex(lim_val_1_display))
+            st.latex(r"\lim_{t_1 \to -\infty} \left[ F(0) - F(t_1) \right] = " + latex(lim_val_1_display))
             
+            is_div_1 = (lim_val_1_display.is_infinite or lim_val_1_display is sp.nan)
             
-
-            if lim_val_1_display.is_infinite or lim_val_1_display is sp.nan:
-                st.error(f"Dado que el **Límite de la Parte 1 es ${latex(lim_val_1_display)}$**, la integral **DIVERGE**.")
+            if is_div_1:
+                st.error(f"❌ **El Límite de la Parte 1 es ${latex(lim_val_1_display)}$**. La integral completa **DIVERGE**.")
                 final_res_step_by_step = lim_val_1
             else:
                 # Parte 2: 0 hasta oo (límite superior t2 -> oo)
                 F_inf2 = F.subs(x, t2) - F.subs(x, 0)
                 lim_val_2 = limit(F_inf2, t2, oo)
+                lim_val_2_display = clean_divergence_result(lim_val_2) # Se limpia el resultado aquí
 
                 st.markdown(f"**Parte 2: Límite de $\\int_{{0}}^{{\\infty}} f(x) dx$**")
-                lim_val_2_display = clean_divergence_result(lim_val_2) # Se limpia el resultado aquí
-                st.latex(r"\lim_{t_2 \to \infty} \left[ F(t_2) - F(0) \right] = \lim_{t_2 \to \infty} \left[ \left(" + latex(F.subs(x, t2)) + r"\right) - \left(" + latex(F.subs(x, 0)) + r"\right) \right]")
-                st.latex(r"\lim_{t_2 \to \infty} \left[ " + latex(sp.simplify(F_inf2)) + r" \right] = " + latex(lim_val_2_display))
+                st.latex(r"\lim_{t_2 \to \infty} \left[ F(t_2) - F(0) \right] = " + latex(lim_val_2_display))
                 
-                
+                is_div_2 = (lim_val_2_display.is_infinite or lim_val_2_display is sp.nan)
 
-                if lim_val_2_display.is_infinite or lim_val_2_display is sp.nan:
-                    st.error(f"Dado que el **Límite de la Parte 2 es ${latex(lim_val_2_display)}$**, la integral **DIVERGE**.")
+                if is_div_2:
+                    st.error(f"❌ **El Límite de la Parte 2 es ${latex(lim_val_2_display)}$**. La integral completa **DIVERGE**.")
                     final_res_step_by_step = lim_val_2
                 
-                final_res_step_by_step = lim_val_1 + lim_val_2 if lim_val_1.is_finite and lim_val_2.is_finite else final_res_step_by_step
+                if not is_div_1 and not is_div_2:
+                    final_res_step_by_step = lim_val_1 + lim_val_2
         
         # Si no es un caso complejo que ya diverge, usamos el resultado de los límites simples
         if final_res_step_by_step is None and mode not in ["internal_singular", "infinite_both"]:
@@ -388,7 +396,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             # Caso especial: integral impar de singularidad, divergente en realidad (ej. 1/x**(5/3) de -1 a 1).
             if mode == "internal_singular" and res_full == 0 and abs(final_res_clean) == oo:
                  st.error("❌ **La integral DIVERGE** (no converge).")
-                 st.write(f"**Aclaración**: El límite lateral resultó ser **${latex(final_res_clean)}$**. Aunque SymPy puede devolver el Valor Principal de Cauchy como $0$ para la integral completa, esta integral es propiamente **DIVERGENTE** porque uno o ambos límites laterales de la singularidad interna dan como resultado $\pm \infty$.")
+                 st.write(f"**Aclaración Importante**: El límite lateral resultó ser **${latex(final_res_clean)}$**. Aunque SymPy puede devolver el Valor Principal de Cauchy como $0$ para la integral completa, esta integral es propiamente **DIVERGENTE** porque uno o ambos límites laterales de la singularidad interna dan como resultado $\pm \infty$.")
             else:
                 st.success(
                     f"✅ **La integral CONVERGE** a un valor finito: ${latex(res_full)}$."
@@ -415,8 +423,18 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 """, unsafe_allow_html=True)
         else:
             st.error("❌ **La integral DIVERGE** (no converge).")
-            # Muestra el resultado limpio de divergencia
-            st.write(f"El resultado del límite es: ${latex(final_res_clean)}$")
+            
+            if mode == "internal_singular":
+                st.markdown(f"**Resultado de la Parte 1**: ${latex(lim_val_1_display)}$")
+                st.markdown(f"**Resultado de la Parte 2**: ${latex(lim_val_2_display)}$")
+                if lim_val_1_display == -oo and lim_val_2_display == oo:
+                     st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$. Al menos una de las partes es infinita, lo que causa la divergencia total.")
+                else:
+                    st.write(f"El resultado del límite divergente fue: ${latex(final_res_clean)}$")
+
+            else:
+                # Muestra el resultado limpio de divergencia
+                st.write(f"El resultado del límite es: ${latex(final_res_clean)}$")
                  
             st.write(
                 "**Explicación detallada**: El límite (o la suma de los límites en casos divididos) resultó en $\\pm \infty$ o no existe, lo que significa que el área crece sin cota (ilimitada)."
