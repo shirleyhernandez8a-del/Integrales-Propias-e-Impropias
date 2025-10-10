@@ -1,6 +1,6 @@
 import streamlit as st
 import sympy as sp
-from sympy import limit, oo, Symbol, integrate, latex, lambdify
+from sympy import limit, oo, Symbol, integrate, latex, lambdify, exp, E
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -91,7 +91,10 @@ st.markdown("---")
 def resolver_integral(f_str, a_str, b_str, var='x'):
     try:
         x = Symbol(var)
-        f = sp.sympify(f_str)
+        # Reemplazar 'E' con 'exp(1)' para garantizar que SymPy lo reconozca como constante de Euler en la entrada del usuario.
+        f_str_sympify = f_str.replace('E', 'exp(1)')
+        
+        f = sp.sympify(f_str_sympify)
         a = sp.sympify(a_str)
         b = sp.sympify(b_str)
 
@@ -184,7 +187,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.latex(latex(F_a))
             st.write("**Explicación**: Reemplazamos x = a en F(x).")
             st.write("**Subpaso 3.3: Aplicar el Teorema Fundamental - Restar para el valor exacto**")
-            st.write("No hay singularidad ni infinito, así que la resta da el resultado directo.")
+            st.write("No se necesita límite (integral propia directa). El valor es la expresión simplificada.")
             expr = F_b - F_a
             st.latex(r"\int_a^b f(x) \, dx = F(b) - F(a) = " + latex(expr))
             res = sp.simplify(expr)
@@ -247,7 +250,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
     except Exception as e:
         st.error(
-            f"❌ Error en el cálculo: {str(e)}. Tips: Usa 'x' como variable, '**' para potencias (ej. x**2), 'oo' para $\\infty$. Ejemplo: 1/x**2."
+            f"❌ Error en el cálculo: {str(e)}. Tips: Usa 'x' como variable, '**' para potencias (ej. x**2), **x**(1/3) para $\\sqrt[3]{x}$, **oo** para $\\infty$, **log()** para $\\ln()$, **exp(x)** para $e^x$. Ejemplo: 1/x**2."
         )
 
 with st.sidebar:
@@ -256,13 +259,16 @@ with st.sidebar:
     # Cambié solo esto para que la guía tenga color forzado y sea legible en dark mode
     st.markdown("<h3 style='color:#1E90FF; margin-top:0.5rem;'>📝 Guía de Sintaxis</h3>", unsafe_allow_html=True)
     st.write(
-        "- **f(x)**: La función debe usar **x** como variable (ej. `1/x**2`, `sin(x)/x`, `e**(-x)`)."
+        "- **f(x)**: La función debe usar **x** como variable (ej. `1/x**2`)."
     )
-    st.write("- **a**: Límite inferior (usa **0** para singularidades, o cualquier número finito).")
-    st.write("- **b**: Límite superior (usa **oo** para $+\\infty$ o cualquier número finito).")
+    st.write("- **a / b**: Límite inferior/superior.")
+    st.write("- **Potencias**: Usa **`**` (ej. `x**2`).")
+    st.write("- **Raíces**: Usa potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$).")
+    st.write("- **Infinito**: Usa **oo** para $+\\infty$.")
+    st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **sqrt(x)** para $\\sqrt{x}$, **exp(x)** para $e^x$.")
     # Reemplacé st.info por un div HTML con fondo claro y texto azul oscuro para contraste en dark mode
     st.markdown(
-        "<div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>💡 <strong>Tip Pro</strong>: Para infinito, usa el texto 'oo'. La <em>gráfica sombreada</em> se ajusta para mostrar el área que se está evaluando.</div>",
+        "<div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>💡 <strong>Tip Pro</strong>: Para la constante de Euler ($e$), puedes usar **exp(1)** o **E**.</div>",
         unsafe_allow_html=True
     )
 
@@ -278,16 +284,16 @@ with tab1:
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         f_expr = st.text_input("🔢 f(x):",
-                               value="1/x**2",
-                               help="Ej: 1/x**2 | Escribe libremente")
+                               value="x**(1/3)",
+                               help="Ej: x**(1/3) | Escribe libremente")
     with col2:
         a_lim = st.text_input(
             "📏 a (inferior):",
-            value="1",
+            value="0",
             help="Ej: 0 (singularidad), 1, o cualquier número")
     with col3:
         b_lim = st.text_input("📏 b (superior):",
-                              value="oo",
+                              value="1",
                               help="Ej: oo (infinito), 1, o cualquier número")
 
     progress_bar = st.progress(0)
@@ -313,7 +319,9 @@ with tab1:
     if st.session_state.show_graph and st.session_state.saved_f != "":
         try:
             x_sym = Symbol('x')
-            f = sp.sympify(st.session_state.saved_f)
+            # Usamos el string original guardado para la gráfica, pero lo pre-procesamos si usa 'E'
+            f_str_graph = st.session_state.saved_f.replace('E', 'exp(1)') 
+            f = sp.sympify(f_str_graph)
             a = sp.sympify(st.session_state.saved_a)
             b = sp.sympify(st.session_state.saved_b)
             fig, ax = plt.subplots(figsize=(10, 6))
@@ -353,8 +361,6 @@ with tab1:
                 # -----------------------------------------------------------------------------------
 
             except Exception as e:
-                # El error de dominio (por ejemplo, al evaluar sqrt(-1)) se captura aquí.
-                # El error 'invalid character' también se capturaba aquí si ocurría dentro de lambdify.
                 st.error(f"❌ Error de Dominio en Gráfica: {e}. Esto sucede cuando la función (ej. sqrt) se evalúa fuera de su dominio. Mostrando solo el eje.")
                 y_vals = np.zeros_like(x_vals) # Fallback
 
@@ -407,8 +413,12 @@ with tab1:
             st.error(f"❌ Error al generar gráfica: {e}. Verifica función simple.")
 
 with tab2:
+    # Ahora usamos dos filas de 3 columnas para los 6 ejemplos
+    st.markdown("### Ejemplos Clásicos de Integrales Impropias")
+    
     col_ej1, col_ej2, col_ej3 = st.columns(3)
     with col_ej1:
+        # Sintaxis original restaurada
         with st.expander("Ej1: $\\int 1/x^2 dx$ de 1 a $\\infty$ (Converge)"):
             st.write("**Función**: $1/x^2$ | **Límites**: $a=1, b=\\infty$")
             if st.button("Resolver Ejemplo 1", key="ej1"):
@@ -416,20 +426,19 @@ with tab2:
                 st.session_state.saved_a = "1"
                 st.session_state.saved_b = "oo"
                 resolver_integral("1/x**2", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
+                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
     with col_ej2:
+        # Sintaxis original restaurada
         with st.expander("Ej2: $\\int 1/\\sqrt{x} dx$ de 0 a 1 (Singular, Converge)"):
-            # FIX CRÍTICO: Reemplazar el símbolo de raíz (√) por 'sqrt(x)' en el código subyacente
             st.write("**Función**: $1/\\sqrt{x}$ | **Límites**: $a=0, b=1$")
             if st.button("Resolver Ejemplo 2", key="ej2"):
-                st.session_state.saved_f = "1/sqrt(x)" # <-- CORREGIDO AQUÍ
+                st.session_state.saved_f = "1/sqrt(x)" 
                 st.session_state.saved_a = "0"
                 st.session_state.saved_b = "1"
-                resolver_integral("1/sqrt(x)", "0", "1") # <-- CORREGIDO AQUÍ
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
+                resolver_integral("1/sqrt(x)", "0", "1")
+                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
     with col_ej3:
+        # Sintaxis original restaurada
         with st.expander("Ej3: $\\int 1/x dx$ de 1 a $\\infty$ (Diverge)"):
             st.write("**Función**: $1/x$ | **Límites**: $a=1, b=\\infty$")
             if st.button("Resolver Ejemplo 3", key="ej3"):
@@ -437,5 +446,40 @@ with tab2:
                 st.session_state.saved_a = "1"
                 st.session_state.saved_b = "oo"
                 resolver_integral("1/x", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
+                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+
+    st.markdown("---") # Separador visual para la segunda fila
+
+    col_ej4, col_ej5, col_ej6 = st.columns(3)
+    with col_ej4:
+        # Logaritmo Natural
+        with st.expander("Ej4: $\\int \ln(x) dx$ de 0 a 1 (Singular, Converge)"):
+            st.write("**Función**: $\\ln(x)$ | **Límites**: $a=0, b=1$")
+            if st.button("Resolver Ejemplo 4", key="ej4"):
+                st.session_state.saved_f = "log(x)" 
+                st.session_state.saved_a = "0"
+                st.session_state.saved_b = "1"
+                resolver_integral("log(x)", "0", "1")
+                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+    with col_ej5:
+        # Raíz Cúbica (Potencia Fraccionaria)
+        with st.expander("Ej5: $\\int 1/\\sqrt[3]{x} dx$ de 0 a 8 (Raíz Cúbica, Converge)"):
+            # Raíz cúbica es x^(-1/3)
+            st.write("**Función**: $x^{-1/3}$ | **Límites**: $a=0, b=8$")
+            if st.button("Resolver Ejemplo 5", key="ej5"):
+                st.session_state.saved_f = "x**(-1/3)" 
+                st.session_state.saved_a = "0"
+                st.session_state.saved_b = "8"
+                resolver_integral("x**(-1/3)", "0", "8")
+                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+    with col_ej6:
+        # Exponencial
+        with st.expander("Ej6: $\\int e^{-x} dx$ de 1 a $\\infty$ (Exponencial, Converge)"):
+            # Exponencial es exp(-x)
+            st.write("**Función**: $e^{-x}$ | **Límites**: $a=1, b=\\infty$")
+            if st.button("Resolver Ejemplo 6", key="ej6"):
+                st.session_state.saved_f = "exp(-x)" 
+                st.session_state.saved_a = "1"
+                st.session_state.saved_b = "oo"
+                resolver_integral("exp(-x)", "1", "oo")
+                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
