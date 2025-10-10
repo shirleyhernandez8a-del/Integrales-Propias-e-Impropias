@@ -28,43 +28,33 @@ st.markdown("""
     /* Estilos de fondo y contenedores (Tema Claro) */
     .main {background-color: #f0f8ff;}
     .stApp {background-color: #f0f8ff;}
-    /* FIX CONTRASTE V5: ELIMINAR fondo fijo en sidebar para permitir tema oscuro nativo */
-    .sidebar .sidebar-content {
-        /* background-color: #e6f3ff; <- ELIMINADO para dejar que Streamlit maneje el tema oscuro/claro de fondo */
-    }
+    /* ---------------------------------------------------------------------- */
+    /* FIX CONTRASTE GENERAL PARA EL MODO CLARO Y DARK MODE */
+    /* ---------------------------------------------------------------------- */
     
     /* Estilos de encabezado y botones */
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
     
-    /* --- FIX DE CONTRASTE GENERAL (Cuerpo Principal) --- */
-    
-    /* Asegura que el texto general del CUERPO (etiquetas, subtítulos, párrafos) sea oscuro */
+    /* 1. CUERPO PRINCIPAL - Asegurar texto oscuro sobre fondo claro */
     .stTextInput label, .stCheckbox label, 
     .stApp p, .stApp h2, .stApp h3 {
         color: #1e3a8a !important; 
     }
-    
-    /* Asegura que el texto dentro de los campos de entrada también sea oscuro */
     .stTextInput input {
         color: #1e3a8a !important;
-        background-color: white !important; /* Asegurar fondo blanco en el campo */
+        background-color: white !important; 
+    }
+    .katex-display .base {
+        color: #000000 !important; 
+    }
+    /* El texto de las alertas en el cuerpo principal debe ser oscuro para el contraste */
+    .stApp .stAlert p, .stApp .stAlert h3, .stApp .stAlert * {
+        color: #1e3a8a !important; 
     }
 
-    /* Fix para el texto de las fórmulas LaTeX (que usa la librería Katex) */
-    .katex-display .base {
-        color: #000000 !important; /* Negro puro para máximo contraste en las fórmulas */
-    }
-    
-    /* Fuerza el color del texto dentro de TODAS las cajas de alerta (st.info, st.success, st.error) */
-    /* En el cuerpo principal será oscuro para contrastar con los fondos claros de la alerta */
-    .stAlert p, .stAlert h3, .stAlert * {
-        color: #1e3a8a !important; /* Azul oscuro para alto contraste */
-    }
-    
-    /* --- FIX V5: Mejorar contraste en la BARRA LATERAL (Headers y texto normal) --- */
-    /* Forzamos todo el texto de la sidebar a CLARO para asegurar legibilidad sobre el fondo oscuro (Dark Mode) */
-    /* Añado un selector más agresivo para los headers de Streamlit */
+    /* 2. BARRA LATERAL - Asegurar texto claro sobre fondo (puede ser oscuro en Dark Mode) */
+    /* Forzamos todo el texto de la sidebar a CLARO */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
@@ -74,13 +64,14 @@ st.markdown("""
     .sidebar .sidebar-content div[data-testid*="stHeader"] *
     {
         color: #f0f8ff !important; /* Color muy claro (blanco azulado) para asegurar legibilidad */
-        text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); /* Sombra ligera para mejorar el borde en fondos muy claros */
     }
 
-    /* --- FIX ESPECÍFICO PARA EL TEXTO DEL "TIP PRO" EN LA BARRA LATERAL (st.info) --- */
-    /* Garantiza que el texto dentro del recuadro de info (st.info) sea claro en Dark Mode */
-    .sidebar .stAlert p, .sidebar .stAlert h3, .sidebar .stAlert * {
-        color: #f0f8ff !important; 
+    /* --- FIX CRÍTICO V3: El texto dentro de los recuadros st.info en la BARRA LATERAL debe ser CLARO --- */
+    /* Esto soluciona la ilegibilidad que mostraste en la imagen (texto azul oscuro sobre fondo oscuro) */
+    .sidebar .sidebar-content .stAlert p, 
+    .sidebar .sidebar-content .stAlert h3, 
+    .sidebar .sidebar-content .stAlert * {
+        color: #f0f8ff !important; /* ¡Forzado a blanco azulado! */
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
