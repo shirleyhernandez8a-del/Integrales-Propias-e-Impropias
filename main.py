@@ -265,13 +265,21 @@ with st.sidebar:
     st.write("- **Potencias**: Usa **`**` (ej. `x**2`).")
     st.write("- **Raíces**: Usa potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$).")
     st.write("- **Infinito**: Usa **oo** para $+\\infty$.")
-    st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **sqrt(x)** para $\\sqrt{x}$, **exp(x)** para $e^x$.")
+    st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **sqrt(x)** para $\\sqrt{x}$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
     
     # ----------------------------------------------------------------------------------
-    # RESTAURACIÓN Y CONSOLIDACIÓN DEL TIP PRO: Incluye información sobre oo, E y gráfica.
+    # NUEVO CONTENIDO PARA EL TIP PRO: Se enfoca en la lógica del solver, no en la sintaxis.
     # ----------------------------------------------------------------------------------
     st.markdown(
-        "<div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>💡 <strong>Tip Pro sobre Límites y Constantes</strong>:<br>1. Para el infinito ($\infty$) en los límites, usa **oo**.<br>2. Para la constante de Euler ($e$), usa **exp(1)** o **E**.<br>3. Para singularidades, puedes usar **0** como límite (ej. $\\int_0^1$).<br>4. La gráfica sombreada se ajusta automáticamente para visualizar el área que se está evaluando.</div>",
+        """
+        <div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>
+        💡 <strong>Tip Pro: Lógica del Solver</strong>
+        <br>1. La app resuelve la integral mediante el **Teorema Fundamental del Cálculo** y luego aplica el **límite**.
+        <br>2. Para límites infinitos ($\infty$), usa una variable **t** y evalúa $\lim_{t \to \infty}$.
+        <br>3. Para singularidades (discontinuidad en el límite, ej. en 0), usa una variable **&epsilon;** y evalúa $\lim_{\epsilon \to 0^+}$.
+        <br>4. La **convergencia** se declara solo si el límite final es un valor **finito** (no $\infty$).
+        </div>
+        """,
         unsafe_allow_html=True
     )
     # ----------------------------------------------------------------------------------
