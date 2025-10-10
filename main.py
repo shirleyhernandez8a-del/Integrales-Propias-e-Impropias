@@ -191,8 +191,9 @@ def clean_divergence_result(result):
 def resolver_integral(f_str, a_str, b_str, var='x'):
     try:
         x = Symbol(var)
-        # Reemplazar 'E' con 'exp(1)' y 'sqrt' con 'sqrt' para SymPy
-        f_str_sympify = f_str.replace('E', 'exp(1)').replace('sqrt', 'sp.sqrt')
+        # Reemplazar 'E' con 'exp(1)' y 'sqrt' con 'sp.sqrt' para SymPy de forma más robusta
+        # Esto soluciona el error 'Symbol' object has no attribute 'sqrt'
+        f_str_sympify = f_str.replace('E', 'exp(1)').replace('sqrt(', 'sp.sqrt(')
         
         f = sp.sympify(f_str_sympify)
         a = sp.sympify(a_str)
@@ -447,8 +448,9 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             )
 
     except Exception as e:
+        # Mensaje de error actualizado
         st.error(
-            f"❌ Error en el cálculo: {str(e)}. Tips: Usa 'x' como variable, '**' para potencias (ej. x**2), **x**(1/3) para $\\sqrt[3]{x}$, **oo** para $\\infty$, **log()** para $\\ln()$, **exp(x)** para $e^x$. Ejemplo: 1/x**2."
+            f"❌ Error en el cálculo: {str(e)}. Tips: Usa **'x'** como variable, **`**` para potencias (ej. x**2), **x**(1/3) para $\\sqrt[3]{x}$, **sqrt(x)** para $\\sqrt{x}$, **oo** para $\\infty$, **log()** para $\\ln()$, **exp(x)** para $e^x$ o **E** para $e$. Ejemplo: 1/sqrt(1+x)."
         )
 
 with st.sidebar:
@@ -461,7 +463,8 @@ with st.sidebar:
     )
     st.write("- **a / b**: Límite inferior/superior.")
     st.write("- **Potencias**: Usa **`**` (ej. `x**2`).")
-    st.write("- **Raíces**: Usa potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$) o `sqrt(x)`.")
+    # Instrucción de raíces actualizada para claridad.
+    st.write("- **Raíces**: Usa **sqrt(x)** para $\\sqrt{x}$ o potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$).")
     st.write("- **Infinito**: Usa **oo** para $+\\infty$ o **-oo** para $-\\infty$.")
     st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
     
@@ -530,8 +533,8 @@ with tab1:
     if st.session_state.show_graph and st.session_state.saved_f != "":
         try:
             x_sym = Symbol('x')
-            # Usamos el string original guardado para la gráfica, pero lo pre-procesamos si usa 'E'
-            f_str_graph = st.session_state.saved_f.replace('E', 'exp(1)').replace('sqrt', 'sp.sqrt')
+            # Usamos el string original guardado para la gráfica, pero lo pre-procesamos si usa 'E' o 'sqrt'
+            f_str_graph = st.session_state.saved_f.replace('E', 'exp(1)').replace('sqrt(', 'sp.sqrt(')
             f = sp.sympify(f_str_graph)
             a = sp.sympify(st.session_state.saved_a)
             b = sp.sympify(st.session_state.saved_b)
