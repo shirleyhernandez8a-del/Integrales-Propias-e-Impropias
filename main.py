@@ -53,8 +53,8 @@ st.markdown("""
         color: #1e3a8a !important; 
     }
 
-    /* 2. BARRA LATERAL - FIX CRÍTICO: Forzar el color a azul oscuro (#1e3a8a) 
-       para asegurar visibilidad y consistencia con el cuerpo principal. */
+    /* 2. BARRA LATERAL - FIX CRÍTICO: Forzar el color a azul claro vibrante (#1E90FF)
+       para asegurar visibilidad y consistencia con el cuerpo principal en dark mode. */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
@@ -65,15 +65,15 @@ st.markdown("""
     .sidebar .sidebar-content div[data-testid*="stHeader"] * ,
     .sidebar .sidebar-content div[data-testid*="stText"] *
     {
-        /* Forzamos color azul oscuro, igual que el cuerpo principal */
-        color: #1e3a8a !important; 
+        /* Forzamos color azul claro vibrante para buena legibilidad */
+        color: #1E90FF !important; 
     }
     /* Aseguramos también el contraste de las alertas en el sidebar */
     .sidebar .sidebar-content .stAlert p, 
     .sidebar .sidebar-content .stAlert h3, 
     .sidebar .sidebar-content .stAlert *
     {
-        color: #1e3a8a !important; 
+        color: #1E90FF !important; 
     }
     /* -------------------------------------------------------------------------------------- */
     </style>
@@ -251,10 +251,10 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         )
 
 with st.sidebar:
-    # Cambié solo el render del header para forzar color legible
-    st.markdown("<h2 style='color:#1e3a8a; margin-bottom:0.2rem;'>⚙️ Configuración y Ayuda</h2>", unsafe_allow_html=True)
+    # Cambié solo el render del header para forzar color legible (azul claro vibrante #1E90FF)
+    st.markdown("<h2 style='color:#1E90FF; margin-bottom:0.2rem;'>⚙️ Configuración y Ayuda</h2>", unsafe_allow_html=True)
     # Cambié solo esto para que la guía tenga color forzado y sea legible en dark mode
-    st.markdown("<h3 style='color:#1e3a8a; margin-top:0.5rem;'>📝 Guía de Sintaxis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#1E90FF; margin-top:0.5rem;'>📝 Guía de Sintaxis</h3>", unsafe_allow_html=True)
     st.write(
         "- **f(x)**: La función debe usar **x** como variable (ej. `1/x**2`, `sin(x)/x`, `e**(-x)`)."
     )
