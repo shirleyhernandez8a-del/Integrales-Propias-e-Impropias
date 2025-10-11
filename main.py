@@ -17,7 +17,7 @@ if "saved_b" not in st.session_state:
     st.session_state.saved_b = ""
 
 st.set_page_config(
-    page_title="Solver de Integrales Impropias Detallado",
+    page_title="Solver de Integrales Impropias y Propias - paso a paso Detallado",
     page_icon="🧮",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -54,7 +54,7 @@ st.markdown("""
     }
 
     /* 2. BARRA LATERAL - FIX CRÍTICO: Forzar el color a azul claro vibrante (#1E90FF)
-        para asegurar visibilidad y consistencia con el cuerpo principal en dark mode. */
+       para asegurar visibilidad y consistencia con el cuerpo principal en dark mode. */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
@@ -81,7 +81,7 @@ st.markdown("""
 
 st.markdown("---")
 st.markdown(
-    "<h1 style='text-align: center; color: #1e3a8a;'>🧮 Solver de Integrales Impropias - Paso a Paso Detallado</h1>",
+    "<h1 style='text-align: center; color: #1e3a8a;'>🧮 Solver de Integrales Impropias y Propias - Paso a Paso Detallado</h1>",
     unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align: center; color: #4b5563; font-size: 18px;'>Ingresa la función y límites. La app explica **cada subpaso** antes de la respuesta final: tipo, cálculo de antiderivada, evaluación del límite y análisis de convergencia. ¡Visualiza el área y confirma la convergencia! 🎓</p>",
@@ -395,8 +395,8 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             # Caso especial: integral impar de singularidad, divergente en realidad (ej. 1/x**(5/3) de -1 a 1).
             # Comprobamos que si es una singularidad interna y el límite da infinito, diverge
             if mode == "internal_singular" and (lim_val_1_display is oo or lim_val_1_display is -oo or lim_val_2_display is oo or lim_val_2_display is -oo):
-                 st.error("❌ **La integral DIVERGE** (no converge).")
-                 st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy ($0$ en este caso), la integral es propiamente **DIVERGENTE** porque la función no es continua en el intervalo.")
+                  st.error("❌ **La integral DIVERGE** (no converge).")
+                  st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy ($0$ en este caso), la integral es propiamente **DIVERGENTE** porque la función no es continua en el intervalo.")
             else:
                 st.success(
                     f"✅ **La integral CONVERGE** a un valor finito: ${latex(res_full)}$."
@@ -430,7 +430,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 
                 # Aclaración de signos neutra
                 if lim_val_1_display is -oo and lim_val_2_display is oo:
-                     st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$. Como al menos una de las partes es infinita, la integral total **DIVERGE**.")
+                    st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$. Como al menos una de las partes es infinita, la integral total **DIVERGE**.")
                 else:
                     st.write(f"El resultado del límite divergente fue: ${latex(final_res_clean)}$")
 
@@ -442,7 +442,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             else:
                 # Muestra el resultado limpio de divergencia
                 st.write(f"El resultado del límite es: ${latex(final_res_clean)}$")
-                 
+                    
             st.write(
                 "**Explicación detallada**: El límite (o la suma de los límites en casos divididos) resultó en $\\pm \infty$ o no existe, lo que significa que el área crece sin cota (ilimitada)."
             )
@@ -614,90 +614,45 @@ with tab1:
             # Eje Y en 0
             ax.axhline(0, color='black', linewidth=0.5)
 
-            ax.set_title(
-                "🔍 Gráfica Interactiva: Visualiza el Área de la Integral",
-                fontsize=16,
-                color='#1e3a8a')
-            ax.set_xlabel("x", fontsize=12)
-            ax.set_ylabel("f(x)", fontsize=12)
+            ax.set_title(f"Gráfica de $f(x) = {latex(f)}$")
+            ax.set_xlabel("x")
+            ax.set_ylabel("f(x)")
             ax.legend()
-            ax.grid(True, alpha=0.3)
+            ax.grid(True, linestyle='--')
             
-            try:
-                y_min = np.nanmin(y_vals)
-                y_max = np.nanmax(y_vals)
-                if np.isnan(y_min) or np.isnan(y_max) or y_max - y_min < 1:
-                    ax.set_ylim(-5, 5)
-                else:
-                    # Limitar el eje Y para evitar gráficos ilegibles debido a picos infinitos
-                    ax.set_ylim(max(-100, y_min), min(100, y_max))
-            except Exception:
-                ax.set_ylim(-5, 5)
-
+            # Renderizar la gráfica
             st.pyplot(fig)
-            plt.close(fig)
+
         except Exception as e:
-            st.error(f"❌ Error al generar gráfica: {e}. Verifica función simple.")
+            st.error(f"❌ Error al generar la gráfica: {e}")
 
 with tab2:
-    st.markdown("### Ejemplos Clásicos de Integrales Impropias")
+    st.markdown("### 🧪 Ejemplos Rápidos")
     
-    col_ej1, col_ej2, col_ej3 = st.columns(3)
-    with col_ej1:
-        with st.expander("Ej1: $\\int 1/x^2 dx$ de 1 a $\\infty$ (Converge)"):
-            st.write("**Función**: $1/x^2$ | **Límites**: $a=1, b=\\infty$")
-            if st.button("Resolver Ejemplo 1", key="ej1"):
-                st.session_state.saved_f = "1/x**2"
-                st.session_state.saved_a = "1"
-                st.session_state.saved_b = "oo"
-                resolver_integral("1/x**2", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
-    with col_ej2:
-        with st.expander("Ej2: $\\int 1/\\sqrt{x} dx$ de 0 a 1 (Singular, Converge)"):
-            st.write("**Función**: $1/\\sqrt{x}$ | **Límites**: $a=0, b=1$")
-            if st.button("Resolver Ejemplo 2", key="ej2"):
-                st.session_state.saved_f = "1/sqrt(x)" 
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "1"
-                resolver_integral("1/sqrt(x)", "0", "1")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
-    with col_ej3:
-        with st.expander("Ej3: $\\int 1/x dx$ de 1 a $\\infty$ (Diverge)"):
-            st.write("**Función**: $1/x$ | **Límites**: $a=1, b=\\infty$")
-            if st.button("Resolver Ejemplo 3", key="ej3"):
-                st.session_state.saved_f = "1/x"
-                st.session_state.saved_a = "1"
-                st.session_state.saved_b = "oo"
-                resolver_integral("1/x", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+    ejemplos = [
+        ("Integral Impropia (Límite Superior)", "1/x**2", "1", "oo", "La integral converge al valor 1. Área bajo la curva infinita, pero acotada."),
+        ("Integral Impropia (Límite Inferior)", "exp(x)", "-oo", "0", "La integral converge al valor 1."),
+        ("Integral Impropia (Singularidad)", "1/sqrt(x)", "0", "4", "Singularidad en x=0. La integral converge al valor 4."),
+        ("Integral Impropia (Divergente)", "1/x", "1", "oo", "La integral diverge (da $\\infty$)."),
+        ("Integral Propia (Simple)", "x**2", "0", "2", "Integral definida estándar. Valor: $8/3 \approx 2.66$"),
+        ("Integral Impropia (Singularidad Interna)", "1/x**2", "-1", "1", "Singularidad en x=0. La integral **DIVERGE**."),
+    ]
 
-    st.markdown("---") # Separador visual para la segunda fila
+    for titulo, f, a, b, descripcion in ejemplos:
+        col_ej1, col_ej2 = st.columns([1, 4])
+        with col_ej1:
+            if st.button(f"Ejecutar {titulo}", key=f):
+                st.session_state.saved_f = f
+                st.session_state.saved_a = a
+                st.session_state.saved_b = b
+                resolver_integral(f, a, b)
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
 
-    col_ej4, col_ej5, col_ej6 = st.columns(3)
-    with col_ej4:
-        with st.expander("Ej4: $\\int \ln(x) dx$ de 0 a 1 (Singular, Converge)"):
-            st.write("**Función**: $\\ln(x)$ | **Límites**: $a=0, b=1$")
-            if st.button("Resolver Ejemplo 4", key="ej4"):
-                st.session_state.saved_f = "log(x)" 
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "1"
-                resolver_integral("log(x)", "0", "1")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
-    with col_ej5:
-        with st.expander("Ej5: $\\int 1/x^{5/3} dx$ de -1 a 1 (Singularidad Interna, DIVERGE)"):
-            st.write("**Función**: $1/x^{5/3}$ | **Límites**: $a=-1, b=1$")
-            if st.button("Resolver Ejemplo 5", key="ej5"):
-                st.session_state.saved_f = "1/x**(5/3)" 
-                st.session_state.saved_a = "-1"
-                st.session_state.saved_b = "1"
-                resolver_integral("1/x**(5/3)", "-1", "1")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
-    with col_ej6:
-        with st.expander("Ej6: $\\int x^2 dx$ de 0 a 2 (Integral Propia, Converge)"):
-            st.write("**Función**: $x^2$ | **Límites**: $a=0, b=2$")
-            if st.button("Resolver Ejemplo 6", key="ej6"):
-                st.session_state.saved_f = "x**2" 
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "2"
-                resolver_integral("x**2", "0", "2")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+        with col_ej2:
+            st.markdown(f"**{titulo}**:")
+            st.markdown(f"$\int_{{{latex(sp.sympify(a))}}}^{{{latex(sp.sympify(b))}}} \\frac{{{latex(sp.sympify(f))}}}{{}} dx$")
+            st.markdown(f"*Descripción*: {descripcion}")
+
+st.markdown("---")
+st.markdown("<footer><p style='text-align: center; color: #93c5fd; font-size: 14px;'>Desarrollado con SymPy y Streamlit para un aprendizaje detallado de integrales.</p></footer>", unsafe_allow_html=True)
