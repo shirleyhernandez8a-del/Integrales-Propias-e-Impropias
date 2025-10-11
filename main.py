@@ -481,7 +481,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.write(f"El resultado del límite es: ${latex(final_res_clean)}$")
                  
             st.write(
-                "**Explicación detallada**: El límite (o la suma de los límites en casos divididos) resultó en $\\pm \\infty$ o no existe, lo que significa que el área crece sin cota (ilimitada)."
+                "**Explicación detallada**: El límite (o la suma de los límites en casos divididos) resultó en $\\pm \infty$ o no existe, lo que significa que el área crece sin cota (ilimitada)."
             )
 
     except Exception as e:
@@ -550,7 +550,8 @@ with tab1:
                               help="Ej: oo (infinito), 1, o cualquier número",
                               key="input_b")
 
-    progress_bar = st.progress(0, key="progress_main")
+    # NOTE: st.progress does not accept a 'key' argument — así que lo dejamos sin key.
+    progress_bar = st.progress(0)
     if st.button("🔍 Resolver con Detalle Completo", type="primary", key="resolver_detalle_btn"):
         for i in range(100):
             progress_bar.progress(i + 1)
