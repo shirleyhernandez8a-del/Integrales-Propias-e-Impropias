@@ -5,6 +5,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+import subprocess  # <-- agregado para comprobar java
+import shlex       # <-- ayuda a parsear comandos seguro
 
 # Inicializar session_state para gráfica persistente
 if "show_graph" not in st.session_state:
@@ -320,7 +322,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             lim_val = limit(expr_eps_a, epsilon, b, dir='-')
             final_res_step_by_step = lim_val
             st.markdown(r"Sustituimos el límite superior singular con $\epsilon$ y tomamos el límite lateral $\epsilon \to b^{-}$:") 
-            st.latex(r"\lim_{\epsilon \to " + latex(b) + r"^{-}} \left[ " + latex(sp.simplify(expr_eps_a)) + r" \right] = " + latex(clean_divergence_result(lim_val)))
+            st.latex(r"\lim_{\epsilon \to " + latex(b) + r"^{-}} \left[ F(" + latex(b) + r") - F(\epsilon) \right] = " + latex(clean_divergence_result(lim_val)))
 
         elif mode == "internal_singular":
             t1, t2 = Symbol('t1'), Symbol('t2')
@@ -528,6 +530,36 @@ with st.sidebar:
                         index=0, key="modo_select")
     if modo == "Avanzado (con Gráfica Auto)":
         st.checkbox("Activar gráfica automática al resolver", value=True, key="sidebar_auto_graf")
+
+    # ---------- NUEVO: Comprobador de Java (NO cambia nada más) ----------
+    st.markdown("---")
+    st.markdown("### 🔎 Comprobar Java (en esta máquina)")
+    st.write("Si corres Streamlit en la misma PC donde está NetBeans, pulsa el botón y te diré la versión de Java.")
+    if st.button("Comprobar java -version"):
+        try:
+            # usamos shlex.split por seguridad en distintos OS
+            cmd = shlex.split("java -version")
+            # java -version imprime en stderr en muchos sistemas -> capturamos ambos
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            out, err = proc.communicate(timeout=5)
+            # Preferimos mostrar err si existe (es donde java -version suele escribir)
+            output = err.strip() if err.strip() != "" else out.strip()
+            if output == "":
+                st.warning("No se obtuvo salida al ejecutar `java -version`. Asegúrate de que 'java' esté en el PATH del sistema.")
+            else:
+                st.code(output)
+                # Mensaje amigable: interpretar la versión
+                if "17" in output or "17." in output:
+                    st.success("Perfecto — tu Java parece ser JDK 17 (ok para el proyecto).")
+                else:
+                    st.info("La versión detectada puede no ser Java 17. Si no es 17, instala Temurin / Adoptium JDK 17 para mayor compatibilidad.")
+        except FileNotFoundError:
+            st.error("No se encontró el ejecutable 'java' en esta máquina. Es probable que no esté instalado o no esté en el PATH.")
+        except subprocess.TimeoutExpired:
+            st.error("La comprobación tardó demasiado y fue cancelada.")
+        except Exception as e:
+            st.error(f"Ocurrió un error al comprobar Java: {e}")
+    # --------------------------------------------------------------------
 
 tab1, tab2 = st.tabs(["🚀 Resolver Manual", "🧪 Ejemplos Rápidos"])
 
