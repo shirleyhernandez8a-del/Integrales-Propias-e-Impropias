@@ -17,7 +17,7 @@ if "saved_b" not in st.session_state:
     st.session_state.saved_b = ""
 
 st.set_page_config(
-    page_title="Solver de Integrales Impropias Detallado",
+    page_title="Solver de Integrales Impropias y Propias Detallado",
     page_icon="🧮",
     layout="wide",
     initial_sidebar_state="expanded"
