@@ -181,7 +181,6 @@ def check_for_singularities_mode(f, a_val, b_val, x):
     if len(singulars) == 0:
         return "proper", None
     
-    # NUEVO: Manejar múltiples singularidades
     if len(singulars) > 1:
         try:
             if getattr(a_val, "is_number", False) and getattr(b_val, "is_number", False):
@@ -210,15 +209,11 @@ def check_for_singularities_mode(f, a_val, b_val, x):
 
 
 def clean_divergence_result(result):
-    """
-    Limpia resultados de SymPy y maneja casos especiales de potencias negativas fraccionarias.
-    """
     if result is oo:
         return oo
     if result is -oo:
         return -oo
     
-    # NUEVO: Convertir (-1)^(2/3) y similares a su valor real
     try:
         result_str = str(result)
         if '(-1)' in result_str and '**' in result_str:
@@ -244,6 +239,69 @@ def clean_divergence_result(result):
         return sp.nan
     
     return result
+
+
+def safe_limit(expr, var_sym, point, dir=None):
+    """Calcula límites de forma segura con múltiples estrategias"""
+    try:
+        if dir is None:
+            result = limit(expr, var_sym, point)
+        else:
+            result = limit(expr, var_sym, point, dir=dir)
+        
+        if result is sp.nan or result is sp.zoo:
+            raise ValueError("Límite indefinido")
+        
+        try:
+            result_numeric = complex(sp.N(result, 15))
+            if abs(result_numeric.imag) < 1e-10:
+                result = sp.Float(result_numeric.real)
+        except:
+            pass
+            
+        return result
+    except Exception:
+        try:
+            if point == oo:
+                f_num = sp.lambdify(var_sym, expr, 'mpmath')
+                for R in [1e2, 1e3, 1e4, 1e5]:
+                    try:
+                        v = f_num(R)
+                        if mp.isfinite(v):
+                            v_next = f_num(R * 10)
+                            if mp.isfinite(v_next) and abs(v - v_next) / (abs(v) + 1e-10) < 0.01:
+                                return mp.mpf(v)
+                    except Exception:
+                        continue
+            elif point == -oo:
+                f_num = sp.lambdify(var_sym, expr, 'mpmath')
+                for R in [-1e2, -1e3, -1e4, -1e5]:
+                    try:
+                        v = f_num(R)
+                        if mp.isfinite(v):
+                            v_next = f_num(R * 10)
+                            if mp.isfinite(v_next) and abs(v - v_next) / (abs(v) + 1e-10) < 0.01:
+                                return mp.mpf(v)
+                    except Exception:
+                        continue
+            else:
+                f_num = sp.lambdify(var_sym, expr, 'mpmath')
+                for delta in [1e-6, 1e-5, 1e-4]:
+                    try:
+                        if dir == '+' or dir is None:
+                            v = f_num(float(point) + delta)
+                            if mp.isfinite(v):
+                                return mp.mpf(v)
+                        if dir == '-' or dir is None:
+                            v = f_num(float(point) - delta)
+                            if mp.isfinite(v):
+                                return mp.mpf(v)
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+        
+        return sp.nan
 
 
 def numeric_integral_backup(f_sym, a_val, b_val, x_sym):
