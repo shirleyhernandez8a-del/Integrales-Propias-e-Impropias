@@ -720,31 +720,31 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                             st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy, la integral es DIVERGENTE porque no existe la suma de las partes.")
                         except Exception:
                             pass
-    else:
-        final_res_step_by_step = lim_val_1_display + lim_val_2_display
-        st.success(f"✅ **La integral CONVERGE**. Resultado: {final_res_step_by_step}")
-        st.write(f"**Parte 1:** {lim_val_1_display} | **Parte 2:** {lim_val_2_display}")
-        st.write(f"**Suma total:** {final_res_step_by_step}")
-                st.write(f"**Explicación detallada**: El límite o la suma de límites es finito (${latex(final_res_step_by_step)}$).")
-                st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
-                st.info("Revisa los pasos 3 y 4 para ver el proceso matemático completo.")
-                st.markdown("""
-                <div id="confetti-holder"></div>
-                <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-                <script>
-                const duration = 3 * 1000;
-                const end = Date.now() + duration;
-                (function frame() {
-                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] });
-                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] });
-                    if (Date.now() < end) {
-                        requestAnimationFrame(frame);
-                    }
-                }());
-                </script>
-                """, unsafe_allow_html=True)
-        else:
-            st.error("❌ **La integral DIVERGE** (no converge).")
+                    else:
+                        final_res_step_by_step = lim_val_1_display + lim_val_2_display
+                        st.success(f"✅ **La integral CONVERGE**. Resultado: {final_res_step_by_step}")
+                        st.write(f"**Parte 1:** {lim_val_1_display} | **Parte 2:** {lim_val_2_display}")
+                        st.write(f"**Suma total:** {final_res_step_by_step}")
+                                st.write(f"**Explicación detallada**: El límite o la suma de límites es finito (${latex(final_res_step_by_step)}$).")
+                                st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
+                                st.info("Revisa los pasos 3 y 4 para ver el proceso matemático completo.")
+                                st.markdown("""
+                                <div id="confetti-holder"></div>
+                                <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+                                <script>
+                                const duration = 3 * 1000;
+                                const end = Date.now() + duration;
+                                (function frame() {
+                                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] });
+                                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#3b82f6', '#60a5fa', '#93c5fd'] });
+                                    if (Date.now() < end) {
+                                        requestAnimationFrame(frame);
+                                    }
+                                }());
+                                </script>
+                                """, unsafe_allow_html=True)
+                        else:
+                            st.error("❌ **La integral DIVERGE** (no converge).")
 
             if mode == "internal_singular":
                 try:
