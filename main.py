@@ -324,7 +324,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.markdown(r"Sustituimos el límite superior singular con $\epsilon$ y tomamos el límite lateral $\epsilon \to b^{-}$:") 
             st.latex(r"\lim_{\epsilon \to " + latex(b) + r"^{-}} \left[ F(" + latex(b) + r") - F(\epsilon) \right] = " + latex(clean_divergence_result(lim_val)))
 
-                elif mode == "internal_singular":
+        elif mode == "internal_singular":
             t1, t2 = Symbol('t1'), Symbol('t2')
             c_val = c if c is not None else 0 # Usar 0 si no se encuentra c para dividir
 
