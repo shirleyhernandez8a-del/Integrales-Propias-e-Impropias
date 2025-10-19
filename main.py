@@ -5,9 +5,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import subprocess  # <-- agregado para comprobar java
-import shlex       # <-- ayuda a parsear comandos seguro
-import mpmath as mp  # respaldo numérico cuando SymPy no alcanza
+import subprocess
+import shlex
+import mpmath as mp
 
 # Inicializar session_state para gráfica persistente
 if "show_graph" not in st.session_state:
@@ -28,18 +28,10 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* Estilos de fondo y contenedores (Tema Claro) */
     .main {background-color: #f0f8ff;}
     .stApp {background-color: #f0f8ff;}
-    /* ---------------------------------------------------------------------- */
-    /* FIX CONTRASTE GENERAL PARA EL MODO CLARO Y DARK MODE */
-    /* ---------------------------------------------------------------------- */
-    
-    /* Estilos de encabezado y botones */
     h1 {color: #1e3a8a; text-align: center; font-family: 'Arial Black';}
     .stButton > button {background-color: #3b82f6; color: white; border-radius: 10px;}
-    
-    /* 1. CUERPO PRINCIPAL - Asegurar texto oscuro (#1e3a8a) sobre fondo claro */
     .stTextInput label, .stCheckbox label, 
     .stApp p, .stApp h2, .stApp h3 {
         color: #1e3a8a !important; 
@@ -51,34 +43,26 @@ st.markdown("""
     .katex-display .base {
         color: #000000 !important; 
     }
-    /* El texto de las alertas en el cuerpo principal debe ser oscuro para el contraste */
     .stApp .stAlert p, .stApp .stAlert h3, .stApp .stAlert * {
         color: #1e3a8a !important; 
     }
-
-    /* 2. BARRA LATERAL - FIX CRÍTICO: Forzar el color a azul claro vibrante (#1E90FF)
-        para asegurar visibilidad y consistencia con el cuerpo principal en dark mode. */
     .sidebar .sidebar-content h1, 
     .sidebar .sidebar-content h2, 
     .sidebar .sidebar-content h3, 
     .sidebar .sidebar-content p,
     .sidebar .sidebar-content label,
-    /* Selector para el texto dentro de st.write y st.markdown */
     .sidebar .sidebar-content div[data-testid*="stMarkdownContainer"] * ,
     .sidebar .sidebar-content div[data-testid*="stHeader"] * ,
     .sidebar .sidebar-content div[data-testid*="stText"] *
     {
-        /* Forzamos color azul claro vibrante para buena legibilidad */
         color: #1E90FF !important; 
     }
-    /* Aseguramos también el contraste de las alertas en el sidebar */
     .sidebar .sidebar-content .stAlert p, 
     .sidebar .sidebar-content .stAlert h3, 
     .sidebar .sidebar-content .stAlert *
     {
         color: #1E90FF !important;
     }
-    /* -------------------------------------------------------------------------------------- */
     </style>
 """, unsafe_allow_html=True)
 
@@ -100,13 +84,11 @@ def find_singularities(f, a_val, b_val, x):
     """
     sing_set = set()
 
-    # Si la función no es simbólica, retornamos vacío
     try:
         f = sp.simplify(f)
     except Exception:
         return []
 
-    # 1) Buscamos polos a partir del denominador si existe
     try:
         denom = sp.denom(f)
         if denom != 1:
@@ -120,29 +102,18 @@ def find_singularities(f, a_val, b_val, x):
     except Exception:
         pass
 
-    # 2) Buscamos puntos donde la función no está definida (zoo, nan)
     try:
-        problematic = sp.solveset(sp.Eq(sp.sympify(f).as_numer_denom()[0], sp.nan), x, domain=sp.S.Reals)
-        # este paso es menos fiable; lo dejamos como intento
-    except Exception:
-        pass
-
-    # 3) Revisar raíces de radicandos en potencias fraccionarias de denominador par (ej sqrt)
-    try:
-        # detecta sqrt(...) y otros exponentes fraccionarios con denominador par
         for sub in sp.preorder_traversal(f):
             if isinstance(sub, sp.Pow):
                 exp = sub.args[1]
                 base = sub.args[0]
                 if exp.is_Rational and exp.q % 2 == 0:
-                    # base >= 0 requerido
                     sols = sp.solveset(sp.Eq(base, 0), x, domain=sp.S.Reals)
                     for s in sols:
                         sing_set.add(sp.simplify(s))
     except Exception:
         pass
 
-    # 4) Filtrar por el intervalo si a_val y b_val son finitos
     filtered = []
     try:
         a = float(a_val) if a_val != -oo and a_val != oo and getattr(a_val, "is_number", False) else None
@@ -159,20 +130,13 @@ def find_singularities(f, a_val, b_val, x):
             if (a is None or sval >= a) and (b is None or sval <= b):
                 filtered.append(sp.simplify(s))
         except Exception:
-            # si no se puede convertir a float, solo incluir si a/b son simbólicos
             filtered.append(sp.simplify(s))
 
-    # eliminar duplicados y ordenar
     unique = sorted(list(set(filtered)), key=lambda z: float(z) if getattr(z, "is_number", False) else 0)
     return unique
 
 
 def check_for_singularities_mode(f, a_val, b_val, x):
-    """
-    Verifica si la integral es impropia debido a límites infinitos o singularidades.
-    Retorna el modo ('proper', 'infinite_upper', etc.) y una singularidad si procede.
-    """
-    # Detectar límites infinitos primero
     if a_val == -oo and b_val == oo:
         return "infinite_both", None
     if b_val == oo:
@@ -180,44 +144,35 @@ def check_for_singularities_mode(f, a_val, b_val, x):
     if a_val == -oo:
         return "infinite_lower", None
 
-    # Buscar singularidades dentro del intervalo o en los extremos
     singulars = find_singularities(f, a_val, b_val, x)
 
     if len(singulars) == 0:
         return "proper", None
 
-    # Si hay singularidades múltiples, preferimos marcar internal_singular si están dentro
     for s in singulars:
         try:
             if s == a_val:
                 return "singular_lower", s
             if s == b_val:
                 return "singular_upper", s
-            # Si está estrictamente entre a y b
             if getattr(a_val, "is_number", False) and getattr(b_val, "is_number", False):
                 if float(a_val) < float(s) < float(b_val):
                     return "internal_singular", s
         except Exception:
-            # si conversión falla, intentamos comparar simbólicamente
             try:
                 if sp.Lt(a_val, s) and sp.Lt(s, b_val):
                     return "internal_singular", s
             except Exception:
                 pass
 
-    # si ninguna condición anterior, devolvemos singular internal por defecto en el primero
     return "internal_singular", singulars[0] if singulars else None
 
 
 def clean_divergence_result(result):
-    """
-    Limpia resultado de SymPy si es infinito o confuso.
-    """
     if result is oo:
         return oo
     if result is -oo:
         return -oo
-    # SymPy a veces devuelve zoo o expresiones con -oo incrustado
     try:
         if getattr(result, "is_infinite", False):
             s = str(result)
@@ -232,12 +187,6 @@ def clean_divergence_result(result):
 
 
 def numeric_integral_backup(f_sym, a_val, b_val, x_sym):
-    """
-    Intento numérico robusto con mpmath en caso SymPy no entregue resultado simbólico.
-    Devuelve (value, converges_bool). Para integrales impropias, intentamos dividir
-    en sub-intervalos y usar quad con límites apropiados.
-    """
-    # Convertir a función mpmath (mediante lambdify con 'mpmath')
     try:
         f_mp = sp.lambdify(x_sym, f_sym, modules=['mpmath'])
     except Exception:
@@ -246,64 +195,33 @@ def numeric_integral_backup(f_sym, a_val, b_val, x_sym):
         except Exception:
             return (None, False)
 
-    mp.mp.dps = 50  # precisión alta
+    mp.mp.dps = 50
 
-    # Manejo de límites infinitos y singularidades simples:
     try:
-        # Con mpmath, usar mp.quad con límites adecuados
         if a_val == -oo and b_val == oo:
-            # dividir en (-inf,0) y (0,inf) (si 0 no es singular)
             try:
                 val1 = mp.quad(f_mp, [-mp.inf, 0])
                 val2 = mp.quad(f_mp, [0, mp.inf])
                 return (val1 + val2, True)
             except Exception:
-                # Intentar dividir en -A..A y aumentar A hasta convergencia (poco robusto pero intentamos)
-                try:
-                    for A in [10, 50, 200, 1000]:
-                        try:
-                            val = mp.quad(f_mp, [-A, A])
-                            return (val, True)
-                        except Exception:
-                            continue
-                except Exception:
-                    return (None, False)
+                return (None, False)
         elif b_val == oo:
             try:
                 val = mp.quad(f_mp, [float(a_val), mp.inf])
                 return (val, True)
             except Exception:
-                # intentar aumentar límite superior finito
-                try:
-                    for B in [10, 50, 200, 1000]:
-                        try:
-                            val = mp.quad(f_mp, [float(a_val), B])
-                            return (val, True)
-                        except Exception:
-                            continue
-                except Exception:
-                    return (None, False)
+                return (None, False)
         elif a_val == -oo:
             try:
                 val = mp.quad(f_mp, [-mp.inf, float(b_val)])
                 return (val, True)
             except Exception:
-                try:
-                    for A in [10, 50, 200, 1000]:
-                        try:
-                            val = mp.quad(f_mp, [-A, float(b_val)])
-                            return (val, True)
-                        except Exception:
-                            continue
-                except Exception:
-                    return (None, False)
+                return (None, False)
         else:
-            # límites finitos normales (podemos intentar detectar singularidades internas)
             try:
                 val = mp.quad(f_mp, [float(a_val), float(b_val)])
                 return (val, True)
             except Exception:
-                # si falla, intentar dividir en subintervalos evitando puntos singulares
                 return (None, False)
     except Exception:
         return (None, False)
@@ -312,17 +230,14 @@ def numeric_integral_backup(f_sym, a_val, b_val, x_sym):
 def resolver_integral(f_str, a_str, b_str, var='x'):
     try:
         x = Symbol(var)
-        # Reemplazos seguros
         f_str_sympify = f_str.replace('E', 'exp(1)').replace('sqrt(', 'sqrt(')
 
-        # Validación temprana y mensaje amigable si falla sympify
         try:
             f = sp.sympify(f_str_sympify)
         except Exception as e:
             st.error(f"Entrada inválida para f(x): {e}. Ejemplos válidos: x**2, 1/x**2, sqrt(x), exp(x), log(x).")
             return
 
-        # parse límites
         try:
             a = sp.sympify(a_str)
         except Exception:
@@ -334,16 +249,43 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.error("Entrada inválida para límite superior 'b'. Usa números o 'oo'/'-oo'.")
             return
 
-        # Mostrar header de análisis
+        # ============ VALIDACIÓN CRÍTICA DEL DOMINIO ============
+        domain_valid = True
+        domain_message = ""
+        
+        # Verificar raíces de índice par (como sqrt)
+        for sub in sp.preorder_traversal(f):
+            if isinstance(sub, sp.Pow):
+                exp = sub.args[1]
+                base = sub.args[0]
+                # Si tiene exponente fraccionario con denominador par (raíz par)
+                if exp.is_Rational and exp.q % 2 == 0:
+                    # El argumento debe ser >= 0
+                    if a != -oo and a.is_number and float(a) < 0:
+                        # Evaluar si base puede ser negativo en el intervalo
+                        try:
+                            test_val = base.subs(x, a)
+                            if test_val.is_number and float(test_val) < 0:
+                                domain_valid = False
+                                domain_message = f"La función **{f_str}** contiene una raíz de índice par (como √x) que **NO está definida para x < 0**. El límite inferior a={a} es negativo, por lo que la integral **NO EXISTE** en los números reales."
+                                break
+                        except:
+                            pass
+        
+        if not domain_valid:
+            st.error("❌ **ERROR: Dominio Inválido**")
+            st.markdown(domain_message)
+            st.info("💡 **Sugerencia**: Verifica que tu función esté definida en todo el intervalo [a, b]. Por ejemplo, √x solo está definida para x ≥ 0.")
+            return
+        # ========================================================
+
         st.subheader("📊 Análisis Completo Paso a Paso")
 
-        # Variables auxiliares
         lim_val_1_display = None
         lim_val_2_display = None
         final_res_step_by_step = None
         numeric_backup_used = False
 
-        # Tipo de integral
         mode, c = check_for_singularities_mode(f, a, b, x)
         analysis_notes = []
 
@@ -387,25 +329,21 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.latex(f"f(x) = {latex(f)}")
         st.write(f"**Límites de Integración**: de ${latex(a)}$ a ${latex(b)}$")
 
-        # --- APLICACIÓN: Encontrar la antiderivada simbólica (si es posible) ---
         try:
             F = sp.integrate(f, x)
             st.write("**Paso 2: Encontrar la Antiderivada Indefinida $F(x)$**")
             st.latex(r"\int f(x) dx = F(x) = " + latex(F) + r" + C")
             st.markdown(f"**Nota**: En la integral definida, la constante $C$ se cancela.")
         except Exception:
-            # Si falla, aún continuamos con el análisis usando límites o respaldo numérico
             F = None
             st.warning("SymPy no pudo calcular la antiderivada simbólicamente. Continuaremos con límites y/o evaluación numérica de respaldo.")
 
-        # --- EVALUACIÓN DE LÍMITES Y PARTES SEGÚN MODO ---
         t = Symbol('t')
         epsilon = Symbol('epsilon')
         lim_val = None
 
         st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
 
-        # Función auxiliar para calcular límite simbólico o numérico de forma segura
         def safe_limit(expr, var_sym, point, dir=None):
             try:
                 if dir is None:
@@ -413,10 +351,8 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 else:
                     return limit(expr, var_sym, point, dir=dir)
             except Exception:
-                # Intento de evaluación numérica si falla el límite simbólico
                 try:
                     if point == oo:
-                        # evaluar expr para valores grandes
                         f_num = sp.lambdify(var_sym, expr, 'mpmath')
                         for R in [1e2, 1e3, 1e4]:
                             try:
@@ -436,7 +372,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                                 continue
                     else:
                         f_num = sp.lambdify(var_sym, expr, 'mpmath')
-                        # evaluar cercano desde ambos lados si es finito
                         for delta in [1e-6, 1e-4, 1e-2]:
                             try:
                                 v1 = f_num(float(point) - delta)
@@ -460,7 +395,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 final_res_step_by_step = sp.simplify(expr)
                 st.latex(r"= " + latex(final_res_step_by_step))
             else:
-                # Si no hay antiderivada simbólica, usamos backup numérico
                 num_val, conv_flag = numeric_integral_backup(f, a, b, x)
                 if conv_flag:
                     numeric_backup_used = True
@@ -478,7 +412,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.markdown(r"Sustituimos el límite superior infinito con $t$:") 
                 st.latex(r"\lim_{t \to \infty} \left[ " + latex(sp.simplify(expr_t_a)) + r" \right] = " + latex(clean_divergence_result(lim_val)))
             else:
-                # Respaldo numérico
                 num_val, conv_flag = numeric_integral_backup(f, a, oo, x)
                 if conv_flag:
                     numeric_backup_used = True
@@ -513,11 +446,9 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.markdown(r"Sustituimos el límite inferior singular con $\epsilon$ y tomamos el límite lateral $\epsilon \to a^{+}$:") 
                 st.latex(r"\lim_{\epsilon \to " + latex(a) + r"^{+}} \left[ " + latex(sp.simplify(expr_b_eps)) + r" \right] = " + latex(clean_divergence_result(lim_val)))
             else:
-                # intentar integral numérica evitando extremo singular
                 try:
                     a_num = float(a)
                     b_num = float(b)
-                    # integrar desde a+delta a b
                     for delta in [1e-6, 1e-4, 1e-2]:
                         try:
                             f_mp = sp.lambdify(x, f, 'mpmath')
@@ -554,12 +485,10 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                     final_res_step_by_step = sp.nan
 
         elif mode == "internal_singular":
-            # dividir en 2 con c
             t1, t2 = Symbol('t1'), Symbol('t2')
             c_val = c if c is not None else 0
 
             if F is not None:
-                # Parte 1
                 F_c1 = F.subs(x, t1) - F.subs(x, a)
                 st.markdown("**Desarrollo detallado de la Parte 1**:")
                 st.latex(r"\int_{" + latex(a) + "}^{" + latex(c_val) + r"} f(x)\,dx = F\left(" + latex(c_val) + r"^{-}\right) - F\left(" + latex(a) + r"\right)")
@@ -570,7 +499,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.markdown(f"**Parte 1: Límite de $\\int_{{{latex(a)}}}^{{{latex(c_val)}}} f(x) dx$ (límite izquierdo)**")
                 st.latex(r"\lim_{t_1 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^-} \left[ F(t_1) - F(" + latex(a) + r") \right] = " + latex(lim_val_1_display))
 
-                # Parte 2
                 F_c2 = F.subs(x, b) - F.subs(x, t2)
                 st.markdown("**Desarrollo detallado de la Parte 2**:")
                 st.latex(r"\int_{" + latex(c_val) + "}^{" + latex(b) + r"} f(x)\,dx = F\left(" + latex(b) + r"\right) - F\left(" + latex(c_val) + r"^{+}\right)")
@@ -580,7 +508,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.markdown(f"**Parte 2: Límite de $\\int_{{{latex(c_val)}}}^{{{latex(b)}}} f(x) dx$ (límite derecho)**")
                 st.latex(r"\lim_{t_2 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^{+}} \left[ F(" + latex(b) + r") - F(t_2) \right] = " + latex(lim_val_2_display))
 
-                # evaluar convergencia
                 is_div_1 = (getattr(lim_val_1_display, "is_infinite", False) or lim_val_1_display is sp.nan)
                 is_div_2 = (getattr(lim_val_2_display, "is_infinite", False) or lim_val_2_display is sp.nan)
 
@@ -592,7 +519,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 else:
                     final_res_step_by_step = lim_val_1 + lim_val_2
             else:
-                # Si F no pudo obtenerse, intentamos respaldo numérico dividiendo en c
                 try:
                     a_num = float(a)
                     b_num = float(b)
@@ -607,15 +533,12 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 except Exception:
                     final_res_step_by_step = sp.nan
 
-        # Si no fue cubierto, usamos lim_val simple
         if final_res_step_by_step is None:
             final_res_step_by_step = lim_val
 
         final_res_clean = clean_divergence_result(final_res_step_by_step)
 
-        # --- ANÁLISIS DE CONVERGENCIA FINAL ---
         try:
-            # Intento simbólico directo (mayor confianza)
             res_full = integrate(f, (x, a, b))
         except Exception:
             res_full = sp.nan
@@ -625,7 +548,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
         is_finite = False
         try:
-            # Si res_full es numérico o simbólico finito
             is_finite = res_full.is_finite
         except Exception:
             try:
@@ -634,9 +556,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             except Exception:
                 is_finite = False
 
-        # Si SymPy indica finito pero el cálculo por límites da infinito, priorizamos límites
         if is_finite:
-            # Comprobación especial para singularidad interna donde límites laterales divergen
             if mode == "internal_singular" and ((isinstance(lim_val_1_display, sp.Expr) and getattr(lim_val_1_display, "is_infinite", False)) or (isinstance(lim_val_2_display, sp.Expr) and getattr(lim_val_2_display, "is_infinite", False))):
                  st.error("❌ **La integral DIVERGE** (no converge).")
                  try:
@@ -644,7 +564,6 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                  except Exception:
                      pass
             else:
-                # Informe de convergencia
                 if numeric_backup_used:
                     st.success(f"✅ **La integral CONVERGE**. Valor numérico aproximado (respaldo): ${sp.N(final_res_clean)}$.")
                 else:
@@ -699,16 +618,13 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
 
 with st.sidebar:
-    # Cambié solo el render del header para forzar color legible (azul claro vibrante #1E90FF)
     st.markdown("<h2 style='color:#1E90FF; margin-bottom:0.2rem;'>⚙️ Configuración y Ayuda</h2>", unsafe_allow_html=True)
-    # Cambié solo esto para que la guía tenga color forzado y sea legible en dark mode
     st.markdown("<h3 style='color:#1E90FF; margin-top:0.5rem;'>📝 Guía de Sintaxis</h3>", unsafe_allow_html=True)
     st.write(
         "- **f(x)**: La función debe usar **x** como variable (ej. `1/x**2`)."
     )
     st.write("- **a / b**: Límite inferior/superior.")
     st.write("- **Potencias**: Usa **`**` (ej. `x**2`).")
-    # Instrucción de raíces actualizada para claridad.
     st.write("- **Raíces**: Usa **sqrt(x)** para $\\sqrt{x}$ o potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$).")
     st.write("- **Infinito**: Usa **oo** para $+\\infty$ o **-oo** para $-\\infty$.")
     st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
@@ -726,7 +642,6 @@ with st.sidebar:
         """,
         unsafe_allow_html=True
     )
-    # ----------------------------------------------------------------------------------
 
     modo = st.selectbox("✨ Opciones de Gráfica",
                         ["Estándar", "Avanzado (con Gráfica Auto)"],
@@ -734,24 +649,19 @@ with st.sidebar:
     if modo == "Avanzado (con Gráfica Auto)":
         st.checkbox("Activar gráfica automática al resolver", value=True, key="sidebar_auto_graf")
 
-    # ---------- NUEVO: Comprobador de Java (NO cambia nada más) ----------
     st.markdown("---")
     st.markdown("### 🔎 Comprobar Java (en esta máquina)")
     st.write("Si corres Streamlit en la misma PC donde está NetBeans, pulsa el botón y te diré la versión de Java.")
     if st.button("Comprobar java -version"):
         try:
-            # usamos shlex.split por seguridad en distintos OS
             cmd = shlex.split("java -version")
-            # java -version imprime en stderr en muchos sistemas -> capturamos ambos
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             out, err = proc.communicate(timeout=5)
-            # Preferimos mostrar err si existe (es donde java -version suele escribir)
             output = err.strip() if err.strip() != "" else out.strip()
             if output == "":
                 st.warning("No se obtuvo salida al ejecutar `java -version`. Asegúrate de que 'java' esté en el PATH del sistema.")
             else:
                 st.code(output)
-                # Mensaje amigable: interpretar la versión
                 if "17" in output or "17." in output:
                     st.success("Perfecto — tu Java parece ser JDK 17 (ok para el proyecto).")
                 else:
@@ -762,11 +672,9 @@ with st.sidebar:
             st.error("La comprobación tardó demasiado y fue cancelada.")
         except Exception as e:
             st.error(f"Ocurrió un error al comprobar Java: {e}")
-    # --------------------------------------------------------------------
 
 tab1, tab2 = st.tabs(["🚀 Resolver Manual", "🧪 Ejemplos Rápidos"])
 
-# --- TAB 1: Resolver Manual ---
 with tab1:
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
@@ -790,7 +698,6 @@ with tab1:
     if st.button("🔍 Resolver con Detalle Completo", type="primary", key="resolver_detalle_btn"):
         for i in range(100):
             progress_bar.progress(i + 1)
-        # Guarda datos para gráfica persistente
         st.session_state.saved_f = f_expr
         st.session_state.saved_a = a_lim
         st.session_state.saved_b = b_lim
@@ -798,7 +705,6 @@ with tab1:
         if modo == "Avanzado (con Gráfica Auto)":
             st.session_state.show_graph = True
 
-    # Mostrar o no la gráfica
     st.session_state.show_graph = st.checkbox(
         "📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)",
         value=st.session_state.show_graph,
@@ -814,7 +720,6 @@ with tab1:
             b = sp.sympify(st.session_state.saved_b)
             fig, ax = plt.subplots(figsize=(10, 6))
 
-            # Ajustar límites de la gráfica
             start = -10.0 if a == -oo else float(a) if hasattr(a, "is_number") and a.is_number else -1.0
             end = 10.0 if b == oo else float(b) if hasattr(b, "is_number") and b.is_number else 1.0
 
@@ -835,7 +740,6 @@ with tab1:
             y_vals = np.clip(y_vals, -100, 100)
 
             ax.plot(x_vals, y_vals, color='#3b82f6', linewidth=2, label=f"f(x) = {st.session_state.saved_f}")
-            # rellenar solo donde finito
             mask = np.isfinite(y_vals)
             if np.any(mask):
                 ax.fill_between(x_vals[mask], 0, y_vals[mask], alpha=0.3, color='#3b82f6', label='Área bajo la curva')
@@ -864,7 +768,6 @@ with tab1:
         except Exception as e:
             st.error(f"❌ Error al generar gráfica: {e}")
 
-# --- TAB 2: Ejemplos Rápidos ---
 with tab2:
     st.markdown("### Ejemplos Clásicos de Integrales Impropias")
 
@@ -931,4 +834,3 @@ with tab2:
                 st.session_state.saved_b = "2"
                 resolver_integral("x**2", "0", "2")
                 if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
-
