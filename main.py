@@ -709,17 +709,17 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                     has_imaginary = True
             
                 elif mode == "internal_singular":
-    if lim_val_1_display is None or lim_val_2_display is None:
-        st.error("❌ **La integral DIVERGE** (uno de los límites no existe).")
-    elif any([
-        str(lim_val_1_display).lower() in ['oo', 'zoo', 'nan', 'infinity'],
-        str(lim_val_2_display).lower() in ['oo', 'zoo', 'nan', 'infinity']
-    ]):
-        st.error("❌ **La integral DIVERGE** (uno de los límites es infinito).")
-        try:
-            st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy, la integral es DIVERGENTE porque no existe la suma de las partes.")
-        except Exception:
-            pass
+                    if lim_val_1_display is None or lim_val_2_display is None:
+                        st.error("❌ **La integral DIVERGE** (uno de los límites no existe).")
+                    elif any([
+                        str(lim_val_1_display).lower() in ['oo', 'zoo', 'nan', 'infinity'],
+                        str(lim_val_2_display).lower() in ['oo', 'zoo', 'nan', 'infinity']
+                        ]):
+                        st.error("❌ **La integral DIVERGE** (uno de los límites es infinito).")
+                        try:
+                            st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy, la integral es DIVERGENTE porque no existe la suma de las partes.")
+                        except Exception:
+                            pass
     else:
         final_res_step_by_step = lim_val_1_display + lim_val_2_display
         st.success(f"✅ **La integral CONVERGE**. Resultado: {final_res_step_by_step}")
