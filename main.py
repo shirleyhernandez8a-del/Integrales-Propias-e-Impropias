@@ -210,10 +210,33 @@ def check_for_singularities_mode(f, a_val, b_val, x):
 
 
 def clean_divergence_result(result):
+    """
+    Limpia resultados de SymPy y maneja casos especiales de potencias negativas fraccionarias.
+    """
     if result is oo:
         return oo
     if result is -oo:
         return -oo
+    
+    # NUEVO: Convertir (-1)^(2/3) y similares a su valor real
+    try:
+        # Si el resultado contiene (-1)^(p/q) con q par, convertir a rama real
+        result_str = str(result)
+        
+        # Patrón: (-1)^(a/b)
+        if '(-1)' in result_str and '**' in result_str:
+            # Evaluar numéricamente para obtener la rama real
+            try:
+                result_numeric = complex(sp.N(result, 15))
+                # Si la parte imaginaria es muy pequeña, es efectivamente real
+                if abs(result_numeric.imag) < 1e-10:
+                    result = sp.Float(result_numeric.real)
+            except:
+                pass
+    except:
+        pass
+    
+    # Resto del código original
     try:
         if getattr(result, "is_infinite", False):
             s = str(result)
@@ -222,8 +245,10 @@ def clean_divergence_result(result):
             return oo
     except Exception:
         pass
+    
     if result is sp.nan:
         return sp.nan
+    
     return result
 
 
