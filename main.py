@@ -755,28 +755,30 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 else:
                     st.write(f"El resultado final muestra divergencia: ${latex(final_res_clean)}$")
             elif mode == "infinite_both":
-                    st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
-                    try:
-                        st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
-                        st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
-                    except Exception:
-                        st.warning("⚠️ No se pudo mostrar uno de los límites.")
-                
-                    st.markdown("### Paso 5: Análisis de Convergencia (Conclusión Final)")
+                st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
+                try:
+                    st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
+                    st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
+                except Exception:
+                    st.warning("⚠️ No se pudo mostrar uno de los límites.")
 
-    if lim_val_1_display is None or lim_val_2_display is None:
-        st.error("❌ La integral DIVERGE (uno de los límites no existe).")
-    elif any([
-        str(lim_val_1_display).lower() in ['oo', 'zoo', 'nan', 'infinity'],
-        str(lim_val_2_display).lower() in ['oo', 'zoo', 'nan', 'infinity']
-    ]):
-        st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
-        st.write("**Explicación detallada**: Al menos uno de los límites laterales tiende a infinito, por lo tanto la integral no converge.")
-    else:
-        final_res_step_by_step = lim_val_1_display + lim_val_2_display
-        st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
-        st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
-        st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
+                st.markdown("### Paso 5: Análisis de Convergencia (Conclusión Final)")
+
+        # 👇 ESTE BLOQUE DEBE ESTAR A ESTE NIVEL, NO DENTRO DEL TRY
+        if lim_val_1_display is None or lim_val_2_display is None:
+            st.error("❌ La integral DIVERGE (uno de los límites no existe).")
+        elif any([
+            str(lim_val_1_display).lower() in ['oo', 'zoo', 'nan', 'infinity'],
+            str(lim_val_2_display).lower() in ['oo', 'zoo', 'nan', 'infinity']
+        ]):
+            st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
+            st.write("**Explicación detallada**: Al menos uno de los límites laterales tiende a infinito, por lo tanto la integral no converge.")
+        else:
+            final_res_step_by_step = lim_val_1_display + lim_val_2_display
+            st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
+            st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
+            st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
+
 
     except TimeoutError:
         st.error("⏱️ **Timeout**: El cálculo está tomando demasiado tiempo. Esta función puede ser demasiado compleja para evaluar simbólicamente.")
