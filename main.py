@@ -553,12 +553,35 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 is_finite = False
 
         if is_finite:
+            # Verificar si el resultado contiene partes imaginarias (indicador de problema de dominio)
+            has_imaginary = False
+            try:
+                if hasattr(final_res_step_by_step, 'as_real_imag'):
+                    real_part, imag_part = final_res_step_by_step.as_real_imag()
+                    if imag_part != 0:
+                        has_imaginary = True
+                elif hasattr(res_full, 'as_real_imag'):
+                    real_part, imag_part = res_full.as_real_imag()
+                    if imag_part != 0:
+                        has_imaginary = True
+            except:
+                # Chequeo alternativo por cadena
+                if 'I' in str(final_res_step_by_step) or 'I' in str(res_full):
+                    has_imaginary = True
+            
             if mode == "internal_singular" and ((isinstance(lim_val_1_display, sp.Expr) and getattr(lim_val_1_display, "is_infinite", False)) or (isinstance(lim_val_2_display, sp.Expr) and getattr(lim_val_2_display, "is_infinite", False))):
                  st.error("❌ **La integral DIVERGE** (no converge).")
                  try:
                      st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy, la integral es DIVERGENTE porque no existe la suma de las partes.")
                  except Exception:
                      pass
+            elif mode == "internal_singular" and has_imaginary:
+                st.error("❌ **La integral DIVERGE** (no converge en los números reales).")
+                try:
+                    st.write(f"**Aclaración Importante**: Los límites laterales dan resultados diferentes (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$).")
+                    st.write("**Explicación**: La función tiene comportamiento complejo en x < 0, y los límites laterales en x = 0 no convergen al mismo valor real. Por tanto, la integral impropia **DIVERGE**.")
+                except Exception:
+                    st.error("La integral diverge porque los límites laterales no son consistentes en los números reales.")
             else:
                 if numeric_backup_used:
                     st.success(f"✅ **La integral CONVERGE**. Valor numérico aproximado (respaldo): ${sp.N(final_res_clean)}$.")
