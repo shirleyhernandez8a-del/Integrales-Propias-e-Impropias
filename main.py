@@ -8,6 +8,7 @@ import numpy as np
 import subprocess
 import shlex
 import mpmath as mp
+import signal
 
 # Inicializar session_state para gráfica persistente
 if "show_graph" not in st.session_state:
@@ -79,8 +80,8 @@ st.markdown("---")
 def find_singularities(f, a_val, b_val, x):
     """
     Intenta encontrar puntos de singularidad reales dentro del intervalo (a, b)
-    o en los límites (a o b). Devuelve una lista de singularidades encontradas
-    (puede estar vacía).
+    o en los límites (a o b). Devuelve una lista de singularidades encontradas.
+    MEJORADO: Detecta múltiples singularidades y discontinuidades esenciales.
     """
     sing_set = set()
 
@@ -89,6 +90,7 @@ def find_singularities(f, a_val, b_val, x):
     except Exception:
         return []
 
+    # 1) Polos: ceros del denominador
     try:
         denom = sp.denom(f)
         if denom != 1:
@@ -102,15 +104,46 @@ def find_singularities(f, a_val, b_val, x):
     except Exception:
         pass
 
+    # 2) Raíces pares: base=0 puede ser problemática
     try:
         for sub in sp.preorder_traversal(f):
             if isinstance(sub, sp.Pow):
                 exp = sub.args[1]
                 base = sub.args[0]
-                if exp.is_Rational and exp.q % 2 == 0:
+                if hasattr(exp, 'is_Rational') and exp.is_Rational and exp.q % 2 == 0:
                     sols = sp.solveset(sp.Eq(base, 0), x, domain=sp.S.Reals)
                     for s in sols:
                         sing_set.add(sp.simplify(s))
+    except Exception:
+        pass
+
+    # 3) Discontinuidades en funciones con argumento problemático (p.ej., tan(1/x), exp(1/x))
+    try:
+        for sub in sp.preorder_traversal(f):
+            # tan: singular cuando su argumento es pi/2 + k*pi; detectamos 1/x u otras fracciones simbólicas
+            if isinstance(sub, sp.tan):
+                arg = sub.args[0]
+                try:
+                    if sp.denom(arg) != 1:
+                        denom_arg = sp.denom(arg)
+                        sols = sp.solveset(sp.Eq(denom_arg, 0), x, domain=sp.S.Reals)
+                        for s in sols:
+                            if getattr(s, 'is_real', False):
+                                sing_set.add(sp.simplify(s))
+                except Exception:
+                    pass
+            # exp(1/x) puede tener discontinuidad esencial acumulada en 0
+            if isinstance(sub, sp.exp):
+                arg = sub.args[0]
+                try:
+                    if sp.denom(arg) != 1:
+                        denom_arg = sp.denom(arg)
+                        sols = sp.solveset(sp.Eq(denom_arg, 0), x, domain=sp.S.Reals)
+                        for s in sols:
+                            if getattr(s, 'is_real', False):
+                                sing_set.add(sp.simplify(s))
+                except Exception:
+                    pass
     except Exception:
         pass
 
@@ -148,6 +181,15 @@ def check_for_singularities_mode(f, a_val, b_val, x):
 
     if len(singulars) == 0:
         return "proper", None
+
+    # Si hay múltiples, priorizar la más cercana al centro del intervalo numérico
+    if len(singulars) > 1:
+        try:
+            if getattr(a_val, "is_number", False) and getattr(b_val, "is_number", False):
+                center = (float(a_val) + float(b_val)) / 2
+                singulars = sorted(singulars, key=lambda s: abs(float(s) - center))
+        except Exception:
+            pass
 
     for s in singulars:
         try:
@@ -325,11 +367,32 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.latex(f"f(x) = {latex(f)}")
         st.write(f"**Límites de Integración**: de ${latex(a)}$ a ${latex(b)}$")
 
+        # Calcular antiderivada con timeout
         try:
+            def _timeout_handler(signum, frame):
+                raise TimeoutError("Cálculo tardó demasiado")
+            try:
+                signal.signal(signal.SIGALRM, _timeout_handler)
+                signal.alarm(10)
+            except Exception:
+                pass
+
             F = sp.integrate(f, x)
+
+            try:
+                signal.alarm(0)
+            except Exception:
+                pass
+
             st.write("**Paso 2: Encontrar la Antiderivada Indefinida $F(x)$**")
             st.latex(r"\int f(x) dx = F(x) = " + latex(F) + r" + C")
             st.markdown(f"**Nota**: En la integral definida, la constante $C$ se cancela.")
+        except TimeoutError:
+            F = None
+            st.warning("⏱️ El cálculo de la antiderivada está tomando demasiado tiempo. Usaremos métodos numéricos de respaldo.")
+        except MemoryError:
+            F = None
+            st.error("💾 La antiderivada requiere demasiada memoria. Intentaremos con aproximaciones numéricas.")
         except Exception:
             F = None
             st.warning("SymPy no pudo calcular la antiderivada simbólicamente. Continuaremos con límites y/o evaluación numérica de respaldo.")
@@ -341,39 +404,49 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
 
         def safe_limit(expr, var_sym, point, dir=None):
+            """Calcula límites de forma robusta: simbólico -> numérico -> heurístico."""
             try:
                 if dir is None:
-                    return limit(expr, var_sym, point)
+                    result = limit(expr, var_sym, point)
                 else:
-                    return limit(expr, var_sym, point, dir=dir)
+                    result = limit(expr, var_sym, point, dir=dir)
+                if result is sp.nan or result is sp.zoo:
+                    raise ValueError("Indefinido")
+                return result
             except Exception:
                 try:
+                    f_num = sp.lambdify(var_sym, expr, 'mpmath')
                     if point == oo:
-                        f_num = sp.lambdify(var_sym, expr, 'mpmath')
-                        for R in [1e2, 1e3, 1e4]:
+                        for R in [1e2, 1e3, 1e4, 1e5]:
                             try:
                                 v = f_num(R)
                                 if mp.isfinite(v):
-                                    return mp.mpf(v)
+                                    v_next = f_num(R * 10)
+                                    if mp.isfinite(v_next) and abs(v - v_next) / (abs(v) + 1e-10) < 0.01:
+                                        return mp.mpf(v)
                             except Exception:
                                 continue
                     elif point == -oo:
-                        f_num = sp.lambdify(var_sym, expr, 'mpmath')
-                        for R in [-1e2, -1e3, -1e4]:
+                        for R in [-1e2, -1e3, -1e4, -1e5]:
                             try:
                                 v = f_num(R)
                                 if mp.isfinite(v):
-                                    return mp.mpf(v)
+                                    v_next = f_num(R * 10)
+                                    if mp.isfinite(v_next) and abs(v - v_next) / (abs(v) + 1e-10) < 0.01:
+                                        return mp.mpf(v)
                             except Exception:
                                 continue
                     else:
-                        f_num = sp.lambdify(var_sym, expr, 'mpmath')
-                        for delta in [1e-6, 1e-4, 1e-2]:
+                        for delta in [1e-6, 1e-5, 1e-4]:
                             try:
-                                v1 = f_num(float(point) - delta)
-                                v2 = f_num(float(point) + delta)
-                                if mp.isfinite(v1) and mp.isfinite(v2) and abs(v1 - v2) < 1e-6:
-                                    return mp.mpf((v1 + v2) / 2)
+                                if dir == '+' or dir is None:
+                                    v = f_num(float(point) + delta)
+                                    if mp.isfinite(v):
+                                        return mp.mpf(v)
+                                if dir == '-' or dir is None:
+                                    v = f_num(float(point) - delta)
+                                    if mp.isfinite(v):
+                                        return mp.mpf(v)
                             except Exception:
                                 continue
                 except Exception:
@@ -430,6 +503,35 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                     numeric_backup_used = True
                     final_res_step_by_step = mp.mpf(num_val)
                     st.markdown("Se usó evaluación numérica de respaldo (mpmath) para la integral impropia (inferior infinito).")
+                    st.latex(r"\text{Valor numérico aproximado: } " + latex(sp.N(final_res_step_by_step)))
+                else:
+                    final_res_step_by_step = sp.nan
+
+        elif mode == "infinite_both":
+            # Elegimos c = 0 para dividir la integral en dos partes
+            t1, t2 = Symbol('t1'), Symbol('t2')
+            c0 = sp.Integer(0)
+            if F is not None:
+                left_expr = F.subs(x, c0) - F.subs(x, t1)
+                right_expr = F.subs(x, t2) - F.subs(x, c0)
+                lim_val_1 = safe_limit(left_expr, t1, -oo)
+                lim_val_2 = safe_limit(right_expr, t2, oo)
+                lim_val_1_display = clean_divergence_result(lim_val_1)
+                lim_val_2_display = clean_divergence_result(lim_val_2)
+                st.markdown("Dividimos en dos partes en c = 0:")
+                st.latex(r"\int_{-\infty}^{\infty} f(x)\,dx = \lim_{t_1\to-\infty}\int_{t_1}^{0} f(x)\,dx + \lim_{t_2\to\infty}\int_{0}^{t_2} f(x)\,dx")
+                st.latex(r"\lim_{t_1 \to -\infty} [" + latex(sp.simplify(left_expr)) + r"] = " + latex(lim_val_1_display))
+                st.latex(r"\lim_{t_2 \to \infty} [" + latex(sp.simplify(right_expr)) + r"] = " + latex(lim_val_2_display))
+                if (getattr(lim_val_1_display, 'is_infinite', False) or lim_val_1_display is sp.nan) or (getattr(lim_val_2_display, 'is_infinite', False) or lim_val_2_display is sp.nan):
+                    final_res_step_by_step = sp.nan
+                else:
+                    final_res_step_by_step = lim_val_1 + lim_val_2
+            else:
+                num_val, conv_flag = numeric_integral_backup(f, -oo, oo, x)
+                if conv_flag:
+                    numeric_backup_used = True
+                    final_res_step_by_step = mp.mpf(num_val)
+                    st.markdown("Se usó evaluación numérica de respaldo (mpmath) dividiendo en (-∞,0] y [0,∞).")
                     st.latex(r"\text{Valor numérico aproximado: } " + latex(sp.N(final_res_step_by_step)))
                 else:
                     final_res_step_by_step = sp.nan
@@ -534,8 +636,26 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
         final_res_clean = clean_divergence_result(final_res_step_by_step)
 
+        # Integral completa con timeout para evitar bloqueos en casos patológicos
         try:
+            def _timeout_handler2(signum, frame):
+                raise TimeoutError("Integral completa tardó demasiado")
+            try:
+                signal.signal(signal.SIGALRM, _timeout_handler2)
+                signal.alarm(15)
+            except Exception:
+                pass
             res_full = integrate(f, (x, a, b))
+            try:
+                signal.alarm(0)
+            except Exception:
+                pass
+        except TimeoutError:
+            res_full = sp.nan
+            st.warning("⏱️ El cálculo de la integral completa está tomando demasiado tiempo. Usando resultados de límites parciales.")
+        except MemoryError:
+            res_full = sp.nan
+            st.error("💾 No hay suficiente memoria para calcular la integral completa simbólicamente.")
         except Exception:
             res_full = sp.nan
             st.warning("SymPy no pudo computar la integral simbólica completa. Se intentó una aproximación numérica si fue posible.")
@@ -737,55 +857,103 @@ with tab1:
             f = sp.sympify(f_str_graph)
             a = sp.sympify(st.session_state.saved_a)
             b = sp.sympify(st.session_state.saved_b)
+            
             fig, ax = plt.subplots(figsize=(10, 6))
 
-            start = -10.0 if a == -oo else float(a) if hasattr(a, "is_number") and a.is_number else -1.0
-            end = 10.0 if b == oo else float(b) if hasattr(b, "is_number") and b.is_number else 1.0
+            try:
+                start = -10.0 if a == -oo else (float(a) if hasattr(a, "is_number") and a.is_number else -1.0)
+            except Exception:
+                start = -10.0
+            try:
+                end = 10.0 if b == oo else (float(b) if hasattr(b, "is_number") and b.is_number else 1.0)
+            except Exception:
+                end = 10.0
+            if start >= end:
+                end = start + 10.0
 
-            if start < 0 and end > 0:
-                x_vals_neg = np.linspace(start, -0.01, 100)
-                x_vals_pos = np.linspace(0.01, end, 100)
-                x_vals = np.concatenate((x_vals_neg, [np.nan], x_vals_pos))
+            # Segmentar alrededor de singularidades detectadas
+            singularities = find_singularities(f, start, end, x_sym)
+            if len(singularities) == 0:
+                x_vals = np.linspace(start, end, 500)
             else:
-                if start == 0: start = 0.01
-                if end == 0: end = -0.01
-                if start >= end: end = start + 5.0
-                x_vals = np.linspace(start, end, 200)
+                segments = []
+                points = [start] + [float(s) for s in singularities if start < float(s) < end] + [end]
+                points = sorted(set(points))
+                for i in range(len(points) - 1):
+                    seg_start = points[i] + 0.01 if i > 0 else points[i]
+                    seg_end = points[i+1] - 0.01 if i < len(points) - 2 else points[i+1]
+                    if seg_start < seg_end:
+                        segments.append(np.linspace(seg_start, seg_end, 100))
+                x_vals = np.concatenate(segments) if segments else np.linspace(start, end, 500)
 
-            f_np = lambdify(x_sym, f, 'numpy')
-            y_vals_raw = f_np(x_vals)
-            y_vals = np.real(y_vals_raw)
-            y_vals[~np.isfinite(y_vals)] = np.nan
-            y_vals = np.clip(y_vals, -100, 100)
+            try:
+                f_np = lambdify(x_sym, f, 'numpy')
+                with np.errstate(all='ignore'):
+                    y_vals_raw = f_np(x_vals)
+                # Parte real si hay complejos
+                if np.iscomplexobj(y_vals_raw):
+                    y_vals = np.real(y_vals_raw)
+                else:
+                    y_vals = y_vals_raw
+                y_vals[~np.isfinite(y_vals)] = np.nan
+                # Escalado adaptativo por percentil
+                finite_abs = np.abs(y_vals[np.isfinite(y_vals)])
+                percentile_99 = np.nanpercentile(finite_abs, 99) if finite_abs.size > 0 else 100
+                y_cap = min(percentile_99 * 1.5, 1000)
+                y_vals = np.clip(y_vals, -y_cap, y_cap)
+            except Exception as e:
+                st.warning(f"⚠️ No se pudo graficar la función: {str(e)[:100]}")
+                plt.close(fig)
+                st.stop()
 
-            ax.plot(x_vals, y_vals, color='#3b82f6', linewidth=2, label=f"f(x) = {st.session_state.saved_f}")
-            mask = np.isfinite(y_vals)
-            if np.any(mask):
-                ax.fill_between(x_vals[mask], 0, y_vals[mask], alpha=0.3, color='#3b82f6', label='Área bajo la curva')
+            if np.any(np.isfinite(y_vals)):
+                ax.plot(x_vals, y_vals, color='#3b82f6', linewidth=2, label=f"f(x) = {st.session_state.saved_f}")
+                mask = np.isfinite(y_vals)
+                if np.any(mask):
+                    ax.fill_between(x_vals[mask], 0, y_vals[mask], alpha=0.3, color='#3b82f6', label='Área bajo la curva')
 
-            if a != -oo and hasattr(a, "is_number") and a.is_number:
-                ax.axvline(float(a), color='r', linestyle='--', label=f'Límite inferior: {a}', linewidth=2)
-            if b != oo and hasattr(b, "is_number") and b.is_number:
-                ax.axvline(float(b), color='g', linestyle='--', label=f'Límite superior: {b}', linewidth=2)
+                if a != -oo and hasattr(a, "is_number") and a.is_number:
+                    try:
+                        ax.axvline(float(a), color='r', linestyle='--', label=f'Límite inferior: {a}', linewidth=2)
+                    except Exception:
+                        pass
+                if b != oo and hasattr(b, "is_number") and b.is_number:
+                    try:
+                        ax.axvline(float(b), color='g', linestyle='--', label=f'Límite superior: {b}', linewidth=2)
+                    except Exception:
+                        pass
 
-            ax.axhline(0, color='black', linewidth=0.5)
-            ax.set_title("🔍 Gráfica Interactiva: Visualiza el Área de la Integral", fontsize=16, color='#1e3a8a')
-            ax.set_xlabel("x", fontsize=12)
-            ax.set_ylabel("f(x)", fontsize=12)
-            ax.legend()
-            ax.grid(True, alpha=0.3)
+                ax.axhline(0, color='black', linewidth=0.5)
+                ax.set_title("🔍 Gráfica Interactiva: Visualiza el Área de la Integral", fontsize=16, color='#1e3a8a')
+                ax.set_xlabel("x", fontsize=12)
+                ax.set_ylabel("f(x)", fontsize=12)
+                ax.legend(loc='best')
+                ax.grid(True, alpha=0.3)
 
-            y_min = np.nanmin(y_vals)
-            y_max = np.nanmax(y_vals)
-            if np.isnan(y_min) or np.isnan(y_max) or y_max - y_min < 1:
-                ax.set_ylim(-5, 5)
+                y_finite = y_vals[np.isfinite(y_vals)]
+                if y_finite.size > 0:
+                    y_min, y_max = np.min(y_finite), np.max(y_finite)
+                    y_range = y_max - y_min
+                    if y_range < 0.1:
+                        y_center = (y_max + y_min) / 2
+                        ax.set_ylim(y_center - 1, y_center + 1)
+                    else:
+                        margin = y_range * 0.1
+                        ax.set_ylim(max(-1000, y_min - margin), min(1000, y_max + margin))
+                else:
+                    ax.set_ylim(-5, 5)
+
+                st.pyplot(fig)
             else:
-                ax.set_ylim(max(-100, y_min), min(100, y_max))
+                st.warning("⚠️ No se pudo generar la gráfica: la función no tiene valores finitos en el intervalo.")
 
-            st.pyplot(fig)
             plt.close(fig)
         except Exception as e:
-            st.error(f"❌ Error al generar gráfica: {e}")
+            st.error(f"❌ Error al generar gráfica: {str(e)[:150]}")
+            try:
+                plt.close(fig)
+            except Exception:
+                pass
 
 with tab2:
     st.markdown("### Ejemplos Clásicos de Integrales Impropias")
