@@ -324,40 +324,57 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.markdown(r"Sustituimos el límite superior singular con $\epsilon$ y tomamos el límite lateral $\epsilon \to b^{-}$:") 
             st.latex(r"\lim_{\epsilon \to " + latex(b) + r"^{-}} \left[ F(" + latex(b) + r") - F(\epsilon) \right] = " + latex(clean_divergence_result(lim_val)))
 
-        elif mode == "internal_singular":
+                elif mode == "internal_singular":
             t1, t2 = Symbol('t1'), Symbol('t2')
             c_val = c if c is not None else 0 # Usar 0 si no se encuentra c para dividir
 
             # Parte 1: a hasta c (límite inferior t1 -> c-)
             F_c1 = F.subs(x, t1) - F.subs(x, a)
+
+            # Mostrar el desarrollo paso a paso de la primera parte
+            st.markdown("**Desarrollo detallado de la Parte 1**:")
+            st.latex(r"\int_{" + latex(a) + "}^{" + latex(c_val) + r"} f(x)\,dx = F\left(" + latex(c_val) + r"^{-}\right) - F\left(" + latex(a) + r"\right)")
+            st.latex(r"= \lim_{t_1 \to " + latex(c_val) + "^{-}} \left[" + latex(F) + r"\right]_{x=" + latex(a) + "}^{x=t_1}")
+            st.latex(r"= \lim_{t_1 \to " + latex(c_val) + "^{-}} \left(" + latex(F.subs(x, t1)) + " - " + latex(F.subs(x, a)) + r"\right)")
+
             lim_val_1 = limit(F_c1, t1, c_val, dir='-')
             lim_val_1_display = clean_divergence_result(lim_val_1) # Se limpia el resultado aquí
-            
-            st.markdown(f"**Parte 1: Límite de $\\int_{{a}}^{{c}} f(x) dx$ ($c={latex(c_val) if c is not None else c_val}$)**")
+
+            st.markdown(f"**Parte 1: Límite de $\\int_{{{latex(a)}}}^{{{latex(c_val)}}} f(x) dx$ (límite izquierdo)**")
             st.latex(r"\lim_{t_1 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^-} \left[ F(t_1) - F(" + latex(a) + r") \right] = " + latex(lim_val_1_display))
-            
+
             # Chequeo explícito de divergencia en la primera parte
             is_div_1 = (getattr(lim_val_1_display, "is_infinite", False) or lim_val_1_display is sp.nan)
-            
+
             # Parte 2: c hasta b (límite superior t2 -> c+)
             F_c2 = F.subs(x, b) - F.subs(x, t2)
+
+            # Mostrar el desarrollo paso a paso de la segunda parte
+            st.markdown("**Desarrollo detallado de la Parte 2**:")
+            st.latex(r"\int_{" + latex(c_val) + "}^{" + latex(b) + r"} f(x)\,dx = F\left(" + latex(b) + r"\right) - F\left(" + latex(c_val) + r"^{+}\right)")
+            st.latex(r"= \lim_{t_2 \to " + latex(c_val) + "^{+}} \left[" + latex(F) + r"\right]_{x=t_2}^{x=" + latex(b) + "}")
+            st.latex(r"= \lim_{t_2 \to " + latex(c_val) + "^{+}} \left(" + latex(F.subs(x, b)) + " - " + latex(F.subs(x, t2)) + r"\right)")
+
             lim_val_2 = limit(F_c2, t2, c_val, dir='+')
             lim_val_2_display = clean_divergence_result(lim_val_2) # Se limpia el resultado aquí
 
-            st.markdown(f"**Parte 2: Límite de $\\int_{{c}}^{{b}} f(x) dx$ ($c={latex(c_val) if c is not None else c_val}$)**")
+            st.markdown(f"**Parte 2: Límite de $\\int_{{{latex(c_val)}}}^{{{latex(b)}}} f(x) dx$ (límite derecho)**")
             st.latex(r"\lim_{t_2 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^{+}} \left[ F(" + latex(b) + r") - F(t_2) \right] = " + latex(lim_val_2_display))
-            
+
             # Chequeo explícito de divergencia en la segunda parte
             is_div_2 = (getattr(lim_val_2_display, "is_infinite", False) or lim_val_2_display is sp.nan)
 
+            # Si una o ambas divergen, el resultado final diverge
             if is_div_1 or is_div_2:
-                # Si una o ambas divergen, el resultado final diverge
-                if is_div_1: final_res_step_by_step = lim_val_1
-                if is_div_2: final_res_step_by_step = lim_val_2
-            
+                if is_div_1:
+                    final_res_step_by_step = lim_val_1
+                if is_div_2:
+                    final_res_step_by_step = lim_val_2
+
             # Si ambos convergen, se suman
             if not is_div_1 and not is_div_2:
                 final_res_step_by_step = lim_val_1 + lim_val_2
+
 
         elif mode == "infinite_both":
             t1, t2 = Symbol('t1'), Symbol('t2')
