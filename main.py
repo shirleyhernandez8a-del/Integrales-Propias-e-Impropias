@@ -941,7 +941,7 @@ with tab1:
 
 with tab2:
     st.markdown("### Ejemplos Clásicos de Integrales Impropias")
-
+    
     col_ej1, col_ej2, col_ej3 = st.columns(3)
     with col_ej1:
         with st.expander("Ej1: ∫ 1/x² dx de 1 a ∞ (Converge)"):
@@ -951,7 +951,8 @@ with tab2:
                 st.session_state.saved_a = "1"
                 st.session_state.saved_b = "oo"
                 resolver_integral("1/x**2", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
 
     with col_ej2:
         with st.expander("Ej2: ∫ 1/√x dx de 0 a 1 (Converge)"):
@@ -961,7 +962,8 @@ with tab2:
                 st.session_state.saved_a = "0"
                 st.session_state.saved_b = "1"
                 resolver_integral("1/sqrt(x)", "0", "1")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
 
     with col_ej3:
         with st.expander("Ej3: ∫ 1/x dx de 1 a ∞ (Diverge)"):
@@ -971,7 +973,8 @@ with tab2:
                 st.session_state.saved_a = "1"
                 st.session_state.saved_b = "oo"
                 resolver_integral("1/x", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
 
     st.markdown("---")
 
@@ -984,7 +987,8 @@ with tab2:
                 st.session_state.saved_a = "0"
                 st.session_state.saved_b = "1"
                 resolver_integral("log(x)", "0", "1")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
 
     with col_ej5:
         with st.expander("Ej5: ∫ 1/x^(5/3) dx de -1 a 1 (Diverge)"):
@@ -994,9 +998,10 @@ with tab2:
                 st.session_state.saved_a = "-1"
                 st.session_state.saved_b = "1"
                 resolver_integral("1/x**(5/3)", "-1", "1")
-                if modo == "Avanzado (con Gráfica Auto)": st.session_state.show_graph = True
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
 
-   with col_ej6:
+    with col_ej6:
         with st.expander("Ej6: ∫ x² dx de 0 a 2 (Propia - Converge)"):
             st.write("**Función:** x² | **Límites:** a=0, b=2")
             if st.button("Resolver Ejemplo 6", key="ej6"):
@@ -1006,8 +1011,7 @@ with tab2:
                 resolver_integral("x**2", "0", "2")
                 if modo == "Avanzado (con Gráfica Auto)":
                     st.session_state.show_graph = True
-
-    st.markdown("---")
+                    st.markdown("---")
 
     col_ej7, col_ej8, col_ej9 = st.columns(3)
     with col_ej7:
