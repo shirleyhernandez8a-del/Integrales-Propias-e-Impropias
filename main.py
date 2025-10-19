@@ -249,35 +249,31 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.error("Entrada inválida para límite superior 'b'. Usa números o 'oo'/'-oo'.")
             return
 
-        # ============ VALIDACIÓN CRÍTICA DEL DOMINIO ============
-        domain_valid = True
+        # ============ VALIDACIÓN DEL DOMINIO (ADVERTENCIA, NO BLOQUEO) ============
+        domain_warning = False
         domain_message = ""
         
-        # Verificar raíces de índice par (como sqrt)
+        # Verificar raíces de índice par (como sqrt) que pueden generar valores complejos
         for sub in sp.preorder_traversal(f):
             if isinstance(sub, sp.Pow):
                 exp = sub.args[1]
                 base = sub.args[0]
                 # Si tiene exponente fraccionario con denominador par (raíz par)
                 if exp.is_Rational and exp.q % 2 == 0:
-                    # El argumento debe ser >= 0
+                    # Verificar si el intervalo incluye valores donde base < 0
                     if a != -oo and a.is_number and float(a) < 0:
-                        # Evaluar si base puede ser negativo en el intervalo
                         try:
                             test_val = base.subs(x, a)
                             if test_val.is_number and float(test_val) < 0:
-                                domain_valid = False
-                                domain_message = f"La función **{f_str}** contiene una raíz de índice par (como √x) que **NO está definida para x < 0**. El límite inferior a={a} es negativo, por lo que la integral **NO EXISTE** en los números reales."
+                                domain_warning = True
+                                domain_message = f"⚠️ **Nota sobre el Dominio**: La función contiene una raíz de índice par que puede generar **valores complejos** en parte del intervalo (x < 0). SymPy trabajará con números complejos si es necesario."
                                 break
                         except:
                             pass
         
-        if not domain_valid:
-            st.error("❌ **ERROR: Dominio Inválido**")
-            st.markdown(domain_message)
-            st.info("💡 **Sugerencia**: Verifica que tu función esté definida en todo el intervalo [a, b]. Por ejemplo, √x solo está definida para x ≥ 0.")
-            return
-        # ========================================================
+        if domain_warning:
+            st.warning(domain_message)
+        # ===========================================================================
 
         st.subheader("📊 Análisis Completo Paso a Paso")
 
