@@ -594,7 +594,8 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.latex(r"\int_{" + latex(a) + "}^{" + latex(c_val) + r"} f(x)\,dx = F\left(" + latex(c_val) + r"^{-}\right) - F\left(" + latex(a) + r"\right)")
                 st.latex(r"= \lim_{t_1 \to " + latex(c_val) + "^{-}} \left(" + latex(F.subs(x, t1)) + " - " + latex(F.subs(x, a)) + r"\right)")
                 lim_val_1 = safe_limit(F_c1, t1, c_val, dir='-')
-                lim_val_1_display = clean_divergence_result(lim_val_1)
+                lim_val_1 = clean_divergence_result(lim_val_1)  # APLICA AQUÍ
+                lim_val_1_display = float(sp.N(lim_val_1, 15))  # CONVIERTE A NÚMERO
 
                 st.markdown(f"**Parte 1: Límite de $\\int_{{{latex(a)}}}^{{{latex(c_val)}}} f(x) dx$ (límite izquierdo)**")
                 st.latex(r"\lim_{t_1 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^-} \left[ F(t_1) - F(" + latex(a) + r") \right] = " + latex(lim_val_1_display))
@@ -604,7 +605,8 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.latex(r"\int_{" + latex(c_val) + "}^{" + latex(b) + r"} f(x)\,dx = F\left(" + latex(b) + r"\right) - F\left(" + latex(c_val) + r"^{+}\right)")
                 st.latex(r"= \lim_{t_2 \to " + latex(c_val) + "^{+}} \left(" + latex(F.subs(x, b)) + " - " + latex(F.subs(x, t2)) + r"\right)")
                 lim_val_2 = safe_limit(F_c2, t2, c_val, dir='+')
-                lim_val_2_display = clean_divergence_result(lim_val_2)
+                lim_val_2 = clean_divergence_result(lim_val_2)  # APLICA AQUÍ
+                lim_val_2_display = float(sp.N(lim_val_2, 15))  # CONVIERTE A NÚMERO
                 st.markdown(f"**Parte 2: Límite de $\\int_{{{latex(c_val)}}}^{{{latex(b)}}} f(x) dx$ (límite derecho)**")
                 st.latex(r"\lim_{t_2 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^{+}} \left[ F(" + latex(b) + r") - F(t_2) \right] = " + latex(lim_val_2_display))
 
