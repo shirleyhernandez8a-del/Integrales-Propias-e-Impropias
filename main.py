@@ -754,12 +754,11 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                      st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$.")
                 else:
                     st.write(f"El resultado final muestra divergencia: ${latex(final_res_clean)}$")
-            elif mode == "infinite_both":
-    st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
-
-    try:
-        st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
-        st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
+                elif mode == "infinite_both":
+                    st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
+                    try:
+                        st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
+                        st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
     except Exception:
         st.warning("⚠️ No se pudo mostrar uno de los límites.")
 
