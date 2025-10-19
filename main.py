@@ -708,13 +708,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 if 'I' in str(final_res_step_by_step) or 'I' in str(res_full):
                     has_imaginary = True
             
-            if mode == "internal_singular" and ((isinstance(lim_val_1_display, sp.Expr) and getattr(lim_val_1_display, "is_infinite", False)) or (isinstance(lim_val_2_display, sp.Expr) and getattr(lim_val_2_display, "is_infinite", False))):
-                 st.error("❌ **La integral DIVERGE** (no converge).")
-                 try:
-                     st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy, la integral es DIVERGENTE porque no existe la suma de las partes.")
-                 except Exception:
-                     pass
-         elif mode == "internal_singular":
+            elif mode == "internal_singular":
     if lim_val_1_display is None or lim_val_2_display is None:
         st.error("❌ **La integral DIVERGE** (uno de los límites no existe).")
     elif any([
@@ -722,16 +716,15 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         str(lim_val_2_display).lower() in ['oo', 'zoo', 'nan', 'infinity']
     ]):
         st.error("❌ **La integral DIVERGE** (uno de los límites es infinito).")
+        try:
+            st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy, la integral es DIVERGENTE porque no existe la suma de las partes.")
+        except Exception:
+            pass
     else:
         final_res_step_by_step = lim_val_1_display + lim_val_2_display
         st.success(f"✅ **La integral CONVERGE**. Resultado: {final_res_step_by_step}")
         st.write(f"**Parte 1:** {lim_val_1_display} | **Parte 2:** {lim_val_2_display}")
         st.write(f"**Suma total:** {final_res_step_by_step}")
-            else:
-                if numeric_backup_used:
-                    st.success(f"✅ **La integral CONVERGE**. Valor numérico aproximado (respaldo): ${sp.N(final_res_clean)}$.")
-                else:
-                    st.success(f"✅ **La integral CONVERGE** a un valor finito: ${latex(res_full)}$.")
                 st.write(f"**Explicación detallada**: El límite o la suma de límites es finito (${latex(final_res_step_by_step)}$).")
                 st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
                 st.info("Revisa los pasos 3 y 4 para ver el proceso matemático completo.")
