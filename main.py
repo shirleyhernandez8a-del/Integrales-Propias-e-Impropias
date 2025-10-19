@@ -486,14 +486,15 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         lim_val = None
 
         st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
-
+        
+        if mode == "proper":
+            
             if F is not None:
                 F_b = F.subs(x, b)
                 F_a = F.subs(x, a)
                 expr = F_b - F_a
                 st.markdown(r"Aplicamos el Teorema Fundamental del Cálculo:")
                 st.latex(r"\int_{" + latex(a) + "}^{" + latex(b) + r"} f(x) \, dx = F(" + latex(b) + ") - F(" + latex(a) + ")")
-                st.latex(r"= \left[ " + latex(F_b) + r" \right] - \left[ " + latex(F_a) + r" \right]")
                 final_res_step_by_step = sp.simplify(expr)
                 st.latex(r"= " + latex(final_res_step_by_step))
             else:
@@ -501,11 +502,8 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 if conv_flag:
                     numeric_backup_used = True
                     final_res_step_by_step = mp.mpf(num_val)
-                    st.markdown("Se usó evaluación numérica de respaldo (mpmath) para la integral propia.")
-                    st.latex(r"\text{Valor numérico aproximado: } " + latex(sp.N(final_res_step_by_step)))
                 else:
                     final_res_step_by_step = sp.nan
-
         elif mode == "infinite_upper":
             if F is not None:
                 expr_t_a = F.subs(x, t) - F.subs(x, a)
