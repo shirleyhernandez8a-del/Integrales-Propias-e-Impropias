@@ -714,13 +714,19 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                      st.write(f"**Aclaración Importante**: Uno o ambos límites laterales resultaron en $\\pm \\infty$ (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$). Aunque SymPy pueda devolver un valor principal de Cauchy, la integral es DIVERGENTE porque no existe la suma de las partes.")
                  except Exception:
                      pass
-            elif mode == "internal_singular" and has_imaginary:
-                st.error("❌ **La integral DIVERGE** (no converge en los números reales).")
-                try:
-                    st.write(f"**Aclaración Importante**: Los límites laterales dan resultados diferentes (Parte 1: ${latex(lim_val_1_display)}$, Parte 2: ${latex(lim_val_2_display)}$).")
-                    st.write("**Explicación**: La función tiene comportamiento complejo en x < 0, y los límites laterales en x = 0 no convergen al mismo valor real. Por tanto, la integral impropia **DIVERGE**.")
-                except Exception:
-                    st.error("La integral diverge porque los límites laterales no son consistentes en los números reales.")
+         elif mode == "internal_singular":
+    if lim_val_1_display is None or lim_val_2_display is None:
+        st.error("❌ **La integral DIVERGE** (uno de los límites no existe).")
+    elif any([
+        str(lim_val_1_display).lower() in ['oo', 'zoo', 'nan', 'infinity'],
+        str(lim_val_2_display).lower() in ['oo', 'zoo', 'nan', 'infinity']
+    ]):
+        st.error("❌ **La integral DIVERGE** (uno de los límites es infinito).")
+    else:
+        final_res_step_by_step = lim_val_1_display + lim_val_2_display
+        st.success(f"✅ **La integral CONVERGE**. Resultado: {final_res_step_by_step}")
+        st.write(f"**Parte 1:** {lim_val_1_display} | **Parte 2:** {lim_val_2_display}")
+        st.write(f"**Suma total:** {final_res_step_by_step}")
             else:
                 if numeric_backup_used:
                     st.success(f"✅ **La integral CONVERGE**. Valor numérico aproximado (respaldo): ${sp.N(final_res_clean)}$.")
