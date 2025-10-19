@@ -496,8 +496,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
         
         if mode == "proper":
-
-    if F is not None:
+            if F is not None:
         F_b = F.subs(x, b)
         F_a = F.subs(x, a)
         expr = F_b - F_a
