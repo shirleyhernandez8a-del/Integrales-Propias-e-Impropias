@@ -743,7 +743,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                                 }());
                                 </script>
                                 """, unsafe_allow_html=True)
-                        else:
+                    else:
                             st.error("❌ **La integral DIVERGE** (no converge).")
 
             if mode == "internal_singular":
