@@ -1,6 +1,14 @@
 import streamlit as st
 import sympy as sp
 from sympy import limit, oo, Symbol, integrate, latex, lambdify, sqrt
+from sympy import re
+
+def safe_float(val):
+    try:
+        val_real = re(val)
+        return float(sp.N(val_real, 15))
+    except Exception:
+        return None
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -488,22 +496,32 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
         
         if mode == "proper":
-            
-            if F is not None:
-                F_b = F.subs(x, b)
-                F_a = F.subs(x, a)
-                expr = F_b - F_a
-                st.markdown(r"Aplicamos el Teorema Fundamental del Cálculo:")
-                st.latex(r"\int_{" + latex(a) + "}^{" + latex(b) + r"} f(x) \, dx = F(" + latex(b) + ") - F(" + latex(a) + ")")
-                final_res_step_by_step = sp.simplify(expr)
-                st.latex(r"= " + latex(final_res_step_by_step))
-            else:
-                num_val, conv_flag = numeric_integral_backup(f, a, b, x)
-                if conv_flag:
-                    numeric_backup_used = True
-                    final_res_step_by_step = mp.mpf(num_val)
-                else:
-                    final_res_step_by_step = sp.nan
+
+    if F is not None:
+        F_b = F.subs(x, b)
+        F_a = F.subs(x, a)
+        expr = F_b - F_a
+        st.markdown(r"Aplicamos el Teorema Fundamental del Cálculo:")
+        st.latex(r"\int_{" + latex(a) + "}^{" + latex(b) + r"} f(x) \, dx = F(" + latex(b) + ") - F(" + latex(a) + ")")
+        final_res_step_by_step = sp.simplify(expr)
+
+        # ✅ Corrección: convertir a float seguro
+        final_res_step_by_step_display = safe_float(final_res_step_by_step)
+
+        # ✅ Mostrar resultado corregido
+        if final_res_step_by_step_display is not None:
+            st.latex(r"= " + latex(final_res_step_by_step_display))
+        else:
+            st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
+    else:
+        num_val, conv_flag = numeric_integral_backup(f, a, b, x)
+        if conv_flag:
+            numeric_backup_used = True
+            final_res_step_by_step = mp.mpf(num_val)
+            final_res_step_by_step_display = safe_float(final_res_step_by_step)
+            st.success(f"✅ Resultado numérico aproximado: {final_res_step_by_step_display}")
+        else:
+            final_res_step_by_step = sp.nan
         elif mode == "infinite_upper":
             if F is not None:
                 expr_t_a = F.subs(x, t) - F.subs(x, a)
@@ -595,7 +613,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.latex(r"= \lim_{t_1 \to " + latex(c_val) + "^{-}} \left(" + latex(F.subs(x, t1)) + " - " + latex(F.subs(x, a)) + r"\right)")
                 lim_val_1 = safe_limit(F_c1, t1, c_val, dir='-')
                 lim_val_1 = clean_divergence_result(lim_val_1)  # APLICA AQUÍ
-                lim_val_1_display = float(sp.N(lim_val_1, 15))  # CONVIERTE A NÚMERO
+                lim_val_1_display = safe_float(lim_val_1)  # CONVIERTE A NÚMERO
 
                 st.markdown(f"**Parte 1: Límite de $\\int_{{{latex(a)}}}^{{{latex(c_val)}}} f(x) dx$ (límite izquierdo)**")
                 st.latex(r"\lim_{t_1 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^-} \left[ F(t_1) - F(" + latex(a) + r") \right] = " + latex(lim_val_1_display))
@@ -606,7 +624,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 st.latex(r"= \lim_{t_2 \to " + latex(c_val) + "^{+}} \left(" + latex(F.subs(x, b)) + " - " + latex(F.subs(x, t2)) + r"\right)")
                 lim_val_2 = safe_limit(F_c2, t2, c_val, dir='+')
                 lim_val_2 = clean_divergence_result(lim_val_2)  # APLICA AQUÍ
-                lim_val_2_display = float(sp.N(lim_val_2, 15))  # CONVIERTE A NÚMERO
+                lim_val_2_display = safe_float(lim_val_2)  # CONVIERTE A NÚMERO
                 st.markdown(f"**Parte 2: Límite de $\\int_{{{latex(c_val)}}}^{{{latex(b)}}} f(x) dx$ (límite derecho)**")
                 st.latex(r"\lim_{t_2 \to " + (latex(c_val) if c is not None else str(c_val)) + r"^{+}} \left[ F(" + latex(b) + r") - F(t_2) \right] = " + latex(lim_val_2_display))
 
