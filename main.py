@@ -708,7 +708,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 if 'I' in str(final_res_step_by_step) or 'I' in str(res_full):
                     has_imaginary = True
             
-                    elif mode == "internal_singular":
+                elif mode == "internal_singular":
     if lim_val_1_display is None or lim_val_2_display is None:
         st.error("❌ **La integral DIVERGE** (uno de los límites no existe).")
     elif any([
