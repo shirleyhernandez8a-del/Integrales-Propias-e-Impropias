@@ -220,15 +220,10 @@ def clean_divergence_result(result):
     
     # NUEVO: Convertir (-1)^(2/3) y similares a su valor real
     try:
-        # Si el resultado contiene (-1)^(p/q) con q par, convertir a rama real
         result_str = str(result)
-        
-        # Patrón: (-1)^(a/b)
         if '(-1)' in result_str and '**' in result_str:
-            # Evaluar numéricamente para obtener la rama real
             try:
                 result_numeric = complex(sp.N(result, 15))
-                # Si la parte imaginaria es muy pequeña, es efectivamente real
                 if abs(result_numeric.imag) < 1e-10:
                     result = sp.Float(result_numeric.real)
             except:
@@ -236,7 +231,6 @@ def clean_divergence_result(result):
     except:
         pass
     
-    # Resto del código original
     try:
         if getattr(result, "is_infinite", False):
             s = str(result)
