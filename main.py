@@ -759,10 +759,10 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                     try:
                         st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
                         st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
-        except Exception:
-        st.warning("⚠️ No se pudo mostrar uno de los límites.")
-
-    st.markdown("### Paso 5: Análisis de Convergencia (Conclusión Final)")
+                    except Exception:
+                        st.warning("⚠️ No se pudo mostrar uno de los límites.")
+                
+                    st.markdown("### Paso 5: Análisis de Convergencia (Conclusión Final)")
 
     if lim_val_1_display is None or lim_val_2_display is None:
         st.error("❌ La integral DIVERGE (uno de los límites no existe).")
