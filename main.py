@@ -725,10 +725,10 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                         st.success(f"✅ **La integral CONVERGE**. Resultado: {final_res_step_by_step}")
                         st.write(f"**Parte 1:** {lim_val_1_display} | **Parte 2:** {lim_val_2_display}")
                         st.write(f"**Suma total:** {final_res_step_by_step}")
-                                st.write(f"**Explicación detallada**: El límite o la suma de límites es finito (${latex(final_res_step_by_step)}$).")
-                                st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
-                                st.info("Revisa los pasos 3 y 4 para ver el proceso matemático completo.")
-                                st.markdown("""
+                        st.write(f"**Explicación detallada**: El límite o la suma de límites es finito (${latex(final_res_step_by_step)}$).")
+                        st.success("✅ ¡Cálculo completado exitosamente! La integral converge.", icon="🎯")
+                        st.info("Revisa los pasos 3 y 4 para ver el proceso matemático completo.")
+                        st.markdown("""
                                 <div id="confetti-holder"></div>
                                 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
                                 <script>
