@@ -1222,7 +1222,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             with col_ej9:
                 with st.expander("Ej9: ∫ x/√(x²+1) dx de 0 a ∞ (Diverge)"):
                     st.write("**Función:** x/√(x²+1) | **Límites:** a=0, b=∞")
-                    if st.button("Resolver Ejemplo 9", key="ej9"):
+                        if st.button("Resolver Ejemplo 9", key="ej9"):
                         st.session_state.saved_f = "x/sqrt(x**2+1)"
                         st.session_state.saved_a = "0"
                         st.session_state.saved_b = "oo"
