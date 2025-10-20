@@ -518,9 +518,9 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 				else:
     				st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
 					st.latex(r"= " + latex(final_res_step_by_step_display))
-				else:
+		else:
 					st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
-			else:
+		else:
 				num_val, conv_flag = numeric_integral_backup(f, a, b, x)
 				if conv_flag:
 					numeric_backup_used = True
