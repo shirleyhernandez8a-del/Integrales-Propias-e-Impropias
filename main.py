@@ -837,6 +837,27 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 return False
 
         def _display_is_infinite(v):
+            # reconoce varios formatos: SymPy oo, string "∞", enorme float, etc.
+            try:
+                if v is None:
+                    return False
+                if getattr(v, "is_infinite", False):
+                    return True
+                s = str(v).strip()
+                if s == "∞":
+                    return True
+                s_low = s.lower()
+                if s_low in ['oo', 'infinity', '+oo', '-oo']:
+                    return True
+                # valores numéricos demasiado grandes interpretados como infinito
+                try:
+                    if isinstance(v, (int, float)) and abs(v) > 1e100:
+                        return True
+                except:
+                    pass
+                return False
+            except:
+                return False
 
         # evaluar estados
         missing1 = _display_is_missing(lim_val_1_display)
