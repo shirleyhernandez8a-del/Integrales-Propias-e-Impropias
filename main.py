@@ -796,7 +796,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                                 </script>
                                 """, unsafe_allow_html=True)
 
-                   if mode == "internal_singular":
+        if mode == "internal_singular":
             try:
                 st.markdown(f"**Resultado de la Parte 1 (Límite Izquierdo)**: ${latex(lim_val_1_display)}$")
                 st.markdown(f"**Resultado de la Parte 2 (Límite Derecho)**: ${latex(lim_val_2_display)}$")
