@@ -773,8 +773,15 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 				st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
 				st.write("**Explicación detallada**: Al menos uno de los límites laterales tiende a infinito, por lo tanto la integral no converge.")
 			else:
-				final_res_step_by_step = lim_val_1_display + lim_val_2_display
-				st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
+# ✅ Intentar simplificar el resultado simbólicamente (por ejemplo atan(∞)-atan(-∞)=π)
+				try:
+				    final_res_sym = sp.simplify(lim_val_1 + lim_val_2)
+				    if final_res_sym != lim_val_1 + lim_val_2:
+				        final_res_step_by_step = final_res_sym
+				except Exception:
+				    final_res_sym = final_res_step_by_step
+				
+				st.success(f"✅ La integral CONVERGE. Resultado: ${latex(final_res_step_by_step)}$")
 				st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
 				st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
 
