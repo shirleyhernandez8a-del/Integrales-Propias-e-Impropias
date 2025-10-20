@@ -509,15 +509,16 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 				final_res_step_by_step_display = safe_float(final_res_step_by_step)
 		
 				# ✅ Mostrar resultado corregido
-				if final_res_step_by_step_display is not None:
-					if abs(final_res_step_by_step_display - np.pi) < 1e-10:
-						st.latex(r"\int_{-\infty}^{\infty} \frac{1}{1 + x^2} \, dx = \pi")
-						st.success("✅ Resultado: π (la integral converge perfectamente)")
-    				else:
-        				st.latex(r"= " + latex(final_res_step_by_step_display))
-				else:
-    				st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
-					st.latex(r"= " + latex(final_res_step_by_step_display))
+if final_res_step_by_step_display is not None:
+    if abs(final_res_step_by_step_display - np.pi) < 1e-10:
+        st.latex(r"\int_{-\infty}^{\infty} \frac{1}{1 + x^2} \, dx = \pi")
+        st.success("✅ Resultado: π (la integral converge perfectamente)")
+    else:
+        st.latex(r"= " + latex(final_res_step_by_step_display))
+else:
+    st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
+    st.latex(r"= " + latex(final_res_step_by_step_display))
+
 		else:
 					st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
 		else:
