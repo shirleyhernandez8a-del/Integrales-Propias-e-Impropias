@@ -796,22 +796,31 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                                 </script>
                                 """, unsafe_allow_html=True)
 
-            if mode == "internal_singular":
-                try:
-                    st.markdown(f"**Resultado de la Parte 1 (Límite Izquierdo)**: ${latex(lim_val_1_display)}$")
-                    st.markdown(f"**Resultado de la Parte 2 (Límite Derecho)**: ${latex(lim_val_2_display)}$")
-                except Exception:
-                    pass
-                if (isinstance(lim_val_1_display, sp.Expr) and getattr(lim_val_1_display, "is_infinite", False)) and (isinstance(lim_val_2_display, sp.Expr) and getattr(lim_val_2_display, "is_infinite", False)) and (str(lim_val_1_display).startswith('-') and not str(lim_val_2_display).startswith('-')):
-                     st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$.")
-                else:
-                    st.write(f"El resultado final muestra divergencia: ${latex(final_res_clean)}$")            elif mode == "infinite_both":
-                st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
-                try:
-                    st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
-                    st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
-                except Exception:
-                    st.warning("⚠️ No se pudo mostrar uno de los límites.")
+                   if mode == "internal_singular":
+            try:
+                st.markdown(f"**Resultado de la Parte 1 (Límite Izquierdo)**: ${latex(lim_val_1_display)}$")
+                st.markdown(f"**Resultado de la Parte 2 (Límite Derecho)**: ${latex(lim_val_2_display)}$")
+            except Exception:
+                pass
+
+            if (
+                isinstance(lim_val_1_display, sp.Expr)
+                and getattr(lim_val_1_display, "is_infinite", False)
+                and isinstance(lim_val_2_display, sp.Expr)
+                and getattr(lim_val_2_display, "is_infinite", False)
+                and (str(lim_val_1_display).startswith('-') and not str(lim_val_2_display).startswith('-'))
+            ):
+                st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$.")
+            else:
+                st.write(f"El resultado final muestra divergencia: ${latex(final_res_clean)}$")
+
+        elif mode == "infinite_both":
+            st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
+            try:
+                st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
+                st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
+            except Exception:
+                st.warning("⚠️ No se pudo mostrar uno de los límites.")
 
                 st.markdown("### Paso 5: Análisis de Convergencia (Conclusión Final)")
 
