@@ -1229,26 +1229,3 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                         resolver_integral("x/sqrt(x**2+1)", "0", "oo")
                         if modo == "Avanzado (con Gráfica Auto)":
                             st.session_state.show_graph = True
-        
-            st.markdown("---")
-            st.markdown("""
-            ### 📚 Notas Importantes sobre los Ejemplos
-            
-            - **Ej1, Ej2, Ej7, Ej8**: Integrales impropias **convergentes** (el límite existe y es finito).
-            - **Ej3, Ej9**: Integrales impropias **divergentes** (el límite es infinito o no existe).
-            - **Ej4**: Singularidad en el límite inferior, pero **converge**.
-            - **Ej5**: Singularidad **interna** en x=0, **diverge** porque los límites laterales no coinciden.
-            - **Ej6**: Integral **propia** (sin impropiedad), cálculo directo.
-            
-            ⚠️ **Limitaciones del Sistema**:
-            - No todas las antiderivadas se pueden calcular simbólicamente.
-            - Algunas funciones muy complejas pueden fallar o ser muy lentas.
-            - Se usa respaldo numérico (mpmath) cuando SymPy no puede proceder.
-            - Las gráficas pueden no mostrar bien funciones con singularidades fuertes.
-            
-            ✅ **Funciona bien con**:
-            - Integrales estándar: 1/x², 1/√x, exponenciales, logaritmos
-            - Límites infinitos simples
-            - Singularidades en extremos
-            - Funciones polinómicas y racionales básicas
-            """)
