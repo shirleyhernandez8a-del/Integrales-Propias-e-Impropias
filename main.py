@@ -457,35 +457,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.latex(f"f(x) = {latex(f)}")
         st.write(f"**Límites de Integración**: de ${latex(a)}$ a ${latex(b)}$")
 
-        # Calcular antiderivada con timeout (solo en sistemas Unix/Linux)
-        F = None
-        try:
-            def timeout_handler(signum, frame):
-                raise TimeoutError("Cálculo tardó demasiado")
-            
-            try:
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.alarm(10)
-            except:
-                pass
-            
-            F = sp.integrate(f, x)
-            
-            try:
-                signal.alarm(0)
-            except:
-                pass
-                
-            st.write("**Paso 2: Encontrar la Antiderivada Indefinida $F(x)$**")
-            st.latex(r"\int f(x) dx = F(x) = " + latex(F) + r" + C")
-            st.markdown(f"**Nota**: En la integral definida, la constante $C$ se cancela.")
-        except TimeoutError:
-            F = None
-            st.warning("⏱️ El cálculo de la antiderivada está tomando demasiado tiempo. Usaremos métodos numéricos de respaldo.")
-        except Exception as e:
-            F = None
-            st.warning(f"⚠️ SymPy no pudo calcular la antiderivada simbólicamente. Continuaremos con evaluación numérica de respaldo.")
-            elif mode == "infinite_both":
+        elif mode == "infinite_both":
             # Evaluación explícita de las dos partes: (-oo -> 0) y (0 -> oo)
             t1, t2 = Symbol('t1'), Symbol('t2')
             st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
@@ -548,6 +520,36 @@ else:
 
         st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
         
+
+        # Calcular antiderivada con timeout (solo en sistemas Unix/Linux)
+        F = None
+        try:
+            def timeout_handler(signum, frame):
+                raise TimeoutError("Cálculo tardó demasiado")
+            
+            try:
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(10)
+            except:
+                pass
+            
+            F = sp.integrate(f, x)
+            
+            try:
+                signal.alarm(0)
+            except:
+                pass
+                
+            st.write("**Paso 2: Encontrar la Antiderivada Indefinida $F(x)$**")
+            st.latex(r"\int f(x) dx = F(x) = " + latex(F) + r" + C")
+            st.markdown(f"**Nota**: En la integral definida, la constante $C$ se cancela.")
+        except TimeoutError:
+            F = None
+            st.warning("⏱️ El cálculo de la antiderivada está tomando demasiado tiempo. Usaremos métodos numéricos de respaldo.")
+        except Exception as e:
+            F = None
+            st.warning(f"⚠️ SymPy no pudo calcular la antiderivada simbólicamente. Continuaremos con evaluación numérica de respaldo.")
+            
         if mode == "proper":
             
             if F is not None:
