@@ -507,22 +507,13 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 		
 				# ✅ Corrección: convertir a float seguro
 				final_res_step_by_step_display = safe_float(final_res_step_by_step)
-				
 		
-				# ✅ Mostrar resultado corregido 
-                if final_res_step_by_step_display is not None:
-                   if abs(final_res_step_by_step_display - np.pi) < 1e-10:
-                       st.latex(r"\int_{-\infty}^{\infty} \frac{1}{1 + x^2} \, dx = \pi")
-                       st.success("✅ Resultado: π (la integral converge perfectamente)")
-                   else:
-                       st.latex(r"= " + latex(final_res_step_by_step_display))
-                else:
-                       st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
-                       st.latex(r"= " + latex(final_res_step_by_step_display))
-
-		else:
+				# ✅ Mostrar resultado corregido
+				if final_res_step_by_step_display is not None:
+					st.latex(r"= " + latex(final_res_step_by_step_display))
+				else:
 					st.error("❌ No se pudo mostrar el resultado. El valor puede ser complejo o indefinido.")
-		else:
+			else:
 				num_val, conv_flag = numeric_integral_backup(f, a, b, x)
 				if conv_flag:
 					numeric_backup_used = True
@@ -782,15 +773,8 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 				st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
 				st.write("**Explicación detallada**: Al menos uno de los límites laterales tiende a infinito, por lo tanto la integral no converge.")
 			else:
-# ✅ Intentar simplificar el resultado simbólicamente (por ejemplo atan(∞)-atan(-∞)=π)
-				try:
-				    final_res_sym = sp.simplify(lim_val_1 + lim_val_2)
-				    if final_res_sym != lim_val_1 + lim_val_2:
-				        final_res_step_by_step = final_res_sym
-				except Exception:
-				    final_res_sym = final_res_step_by_step
-				
-				st.success(f"✅ La integral CONVERGE. Resultado: ${latex(final_res_step_by_step)}$")
+				final_res_step_by_step = lim_val_1_display + lim_val_2_display
+				st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
 				st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
 				st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
 
