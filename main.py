@@ -838,396 +838,396 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
         def _display_is_infinite(v):
 
-# evaluar estados
-missing1 = _display_is_missing(lim_val_1_display)
-missing2 = _display_is_missing(lim_val_2_display)
-nan1 = _display_is_nan_or_zoo(lim_val_1_display)
-nan2 = _display_is_nan_or_zoo(lim_val_2_display)
-inf1 = _display_is_infinite(lim_val_1_display)
-inf2 = _display_is_infinite(lim_val_2_display)
-
-# Caso: falta alguno de los límites (no calculado)
-if missing1 or missing2:
-    st.error("❌ La integral DIVERGE (uno de los límites no existe).")
-# Caso: alguno da NaN/zoo -> diverge/indefinido
-elif nan1 or nan2:
-    st.error("❌ La integral DIVERGE / Límite indefinido (nan/zoo).")
-# Caso: alguno es infinito -> diverge (no converge)
-elif inf1 or inf2:
-    # Mostrar detalles claros
-    try:
-        st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
-        st.write("**Detalles:**")
-        st.write(f"Parte 1: {lim_val_1_display}    |    Parte 2: {lim_val_2_display}")
-    except:
-        st.error("❌ La integral DIVERGE (∞ detectado).")
-# Caso: ambos finitos -> sumar y mostrar resultado
-else:
-    try:
-        # convertir a número si hace falta y sumar
-        a_val = lim_val_1_display
-        b_val = lim_val_2_display
-        # si son SymPy Floats/MP, intentar convertir a Python float o sp.N
-        try:
-            a_val_num = float(sp.N(a_val, 15))
-        except:
-            try:
-                a_val_num = float(a_val)
-            except:
-                a_val_num = a_val
-        try:
-            b_val_num = float(sp.N(b_val, 15))
-        except:
-            try:
-                b_val_num = float(b_val)
-            except:
-                b_val_num = b_val
-
-        final_res_step_by_step = a_val_num + b_val_num
-        st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
-        st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
-        st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
-    except Exception:
-        # fallback si la suma falla (por ejemplo tipos raros)
-        st.error("❌ Error al sumar los límites. Tratando como divergente por precaución.")
-
-
-    except TimeoutError:
-        st.error("⏱️ **Timeout**: El cálculo está tomando demasiado tiempo. Esta función puede ser demasiado compleja para evaluar simbólicamente.")
-        st.info("💡 **Sugerencia**: Intenta simplificar la función o usar límites de integración más pequeños.")
-    except MemoryError:
-        st.error("💾 **Error de Memoria**: La función requiere demasiados recursos para calcular.")
-        st.info("💡 **Sugerencia**: Intenta con una función más simple o límites más acotados.")
-    except Exception as e:
-        error_msg = str(e)
-        st.error(f"❌ **Error inesperado en el cálculo**: {error_msg[:200]}")
-        st.info("""
-        💡 **Tips de sintaxis**:
-        - Usa **'x'** como variable
-        - **`**` para potencias (ej. x**2)
-        - **x**(1/3) para ∛x
-        - **sqrt(x)** para √x
-        - **oo** para ∞
-        - **log(x)** para ln(x)
-        - **exp(x)** para eˣ
-        - **E** para la constante e
+        # evaluar estados
+        missing1 = _display_is_missing(lim_val_1_display)
+        missing2 = _display_is_missing(lim_val_2_display)
+        nan1 = _display_is_nan_or_zoo(lim_val_1_display)
+        nan2 = _display_is_nan_or_zoo(lim_val_2_display)
+        inf1 = _display_is_infinite(lim_val_1_display)
+        inf2 = _display_is_infinite(lim_val_2_display)
         
-        📝 **Ejemplo**: `1/sqrt(1+x)` o `exp(-x**2)`
-        """)
-        
-        with st.expander("🔧 Detalles técnicos del error (para debugging)"):
-            st.code(f"Error completo:\n{str(e)}")
-            import traceback
-            st.code(f"Traceback:\n{traceback.format_exc()}")
-
-
-with st.sidebar:
-    st.markdown("<h2 style='color:#1E90FF; margin-bottom:0.2rem;'>⚙️ Configuración y Ayuda</h2>", unsafe_allow_html=True)
-    st.markdown("<h3 style='color:#1E90FF; margin-top:0.5rem;'>📝 Guía de Sintaxis</h3>", unsafe_allow_html=True)
-    st.write("- **f(x)**: La función debe usar **x** como variable (ej. `1/x**2`).")
-    st.write("- **a / b**: Límite inferior/superior.")
-    st.write("- **Potencias**: Usa **`**` (ej. `x**2`).")
-    st.write("- **Raíces**: Usa **sqrt(x)** para $\\sqrt{x}$ o potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$).")
-    st.write("- **Infinito**: Usa **oo** para $+\\infty$ o **-oo** para $-\\infty$.")
-    st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
-
-    st.markdown("""
-        <div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>
-        💡 <strong>Nota del Desarrollador</strong>
-        <br>1. El sistema identifica si es **Propia** o **Impropia** (y el tipo).
-        <br>2. Primero se calcula la **Antiderivada** **F(x)**.
-        <br>3. Luego se aplica el **Límite** correspondiente (a **t** o **épsilon**).
-        <br>4. La **convergencia** se declara solo si el límite final es **finito**.
-        <br>5. La respuesta final está **validada con SymPy** para máxima confianza.
-        </div>
-        """, unsafe_allow_html=True)
-
-    modo = st.selectbox("✨ Opciones de Gráfica", ["Estándar", "Avanzado (con Gráfica Auto)"], index=0, key="modo_select")
-    if modo == "Avanzado (con Gráfica Auto)":
-        st.checkbox("Activar gráfica automática al resolver", value=True, key="sidebar_auto_graf")
-
-    st.markdown("---")
-    st.markdown("### 🔎 Comprobar Java (en esta máquina)")
-    st.write("Si corres Streamlit en la misma PC donde está NetBeans, pulsa el botón y te diré la versión de Java.")
-    if st.button("Comprobar java -version"):
-        try:
-            cmd = shlex.split("java -version")
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            out, err = proc.communicate(timeout=5)
-            output = err.strip() if err.strip() != "" else out.strip()
-            if output == "":
-                st.warning("No se obtuvo salida al ejecutar `java -version`. Asegúrate de que 'java' esté en el PATH del sistema.")
-            else:
-                st.code(output)
-                if "17" in output or "17." in output:
-                    st.success("Perfecto — tu Java parece ser JDK 17 (ok para el proyecto).")
-                else:
-                    st.info("La versión detectada puede no ser Java 17. Si no es 17, instala Temurin / Adoptium JDK 17 para mayor compatibilidad.")
-        except FileNotFoundError:
-            st.error("No se encontró el ejecutable 'java' en esta máquina. Es probable que no esté instalado o no esté en el PATH.")
-        except subprocess.TimeoutExpired:
-            st.error("La comprobación tardó demasiado y fue cancelada.")
-        except Exception as e:
-            st.error(f"Ocurrió un error al comprobar Java: {e}")
-
-tab1, tab2 = st.tabs(["🚀 Resolver Manual", "🧪 Ejemplos Rápidos"])
-
-with tab1:
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
-        f_expr = st.text_input("🔢 f(x):", value="1/x**(5/3)", help="Ej: x**(1/3) | Escribe libremente", key="input_fx")
-    with col2:
-        a_lim = st.text_input("📏 a (inferior):", value="-1", help="Ej: 0 (singularidad), 1, o cualquier número", key="input_a")
-    with col3:
-        b_lim = st.text_input("📏 b (superior):", value="1", help="Ej: oo (infinito), 1, o cualquier número", key="input_b")
-
-    progress_bar = st.progress(0)
-    if st.button("🔍 Resolver con Detalle Completo", type="primary", key="resolver_detalle_btn"):
-        for i in range(100):
-            progress_bar.progress(i + 1)
-        st.session_state.saved_f = f_expr
-        st.session_state.saved_a = a_lim
-        st.session_state.saved_b = b_lim
-        resolver_integral(f_expr, a_lim, b_lim)
-        if modo == "Avanzado (con Gráfica Auto)":
-            st.session_state.show_graph = True
-
-    st.session_state.show_graph = st.checkbox("📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)", value=st.session_state.show_graph, key="graph_checkbox")
-
-    if st.session_state.show_graph and st.session_state.saved_f != "":
-        try:
-            x_sym = Symbol('x')
-            f_str_graph = st.session_state.saved_f.replace('E', 'exp(1)').replace('sqrt(', 'sqrt(')
-            f = sp.sympify(f_str_graph)
-            a = sp.sympify(st.session_state.saved_a)
-            b = sp.sympify(st.session_state.saved_b)
-            
-            fig, ax = plt.subplots(figsize=(10, 6))
-
+        # Caso: falta alguno de los límites (no calculado)
+        if missing1 or missing2:
+            st.error("❌ La integral DIVERGE (uno de los límites no existe).")
+        # Caso: alguno da NaN/zoo -> diverge/indefinido
+        elif nan1 or nan2:
+            st.error("❌ La integral DIVERGE / Límite indefinido (nan/zoo).")
+        # Caso: alguno es infinito -> diverge (no converge)
+        elif inf1 or inf2:
+            # Mostrar detalles claros
             try:
-                start = -10.0 if a == -oo else (float(a) if hasattr(a, "is_number") and a.is_number else -1.0)
-                end = 10.0 if b == oo else (float(b) if hasattr(b, "is_number") and b.is_number else 1.0)
+                st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
+                st.write("**Detalles:**")
+                st.write(f"Parte 1: {lim_val_1_display}    |    Parte 2: {lim_val_2_display}")
             except:
-                start, end = -10.0, 10.0
-            
-            if start >= end:
-                end = start + 10.0
-
-            singularities = find_singularities(f, start, end, x_sym)
-            
-            if len(singularities) == 0:
-                x_vals = np.linspace(start, end, 500)
-            else:
-                segments = []
-                points = [start] + [float(s) for s in singularities if start < float(s) < end] + [end]
-                points = sorted(set(points))
-                
-                for i in range(len(points) - 1):
-                    seg_start = points[i] + 0.01 if i > 0 else points[i]
-                    seg_end = points[i+1] - 0.01 if i < len(points) - 2 else points[i+1]
-                    if seg_start < seg_end:
-                        segments.append(np.linspace(seg_start, seg_end, 100))
-                
-                x_vals = np.concatenate(segments) if segments else np.linspace(start, end, 500)
-
+                st.error("❌ La integral DIVERGE (∞ detectado).")
+        # Caso: ambos finitos -> sumar y mostrar resultado
+        else:
             try:
-                f_np = lambdify(x_sym, f, 'numpy')
-                with np.errstate(all='ignore'):
-                    y_vals_raw = f_np(x_vals)
-                    
-                if np.iscomplexobj(y_vals_raw):
-                    y_vals = np.real(y_vals_raw)
-                else:
-                    y_vals = y_vals_raw
-                    
-                y_vals[~np.isfinite(y_vals)] = np.nan
-                
-                percentile_99 = np.nanpercentile(np.abs(y_vals[np.isfinite(y_vals)]), 99) if np.any(np.isfinite(y_vals)) else 100
-                y_limit = min(percentile_99 * 1.5, 1000)
-                y_vals = np.clip(y_vals, -y_limit, y_limit)
+                # convertir a número si hace falta y sumar
+                a_val = lim_val_1_display
+                b_val = lim_val_2_display
+                # si son SymPy Floats/MP, intentar convertir a Python float o sp.N
+                try:
+                    a_val_num = float(sp.N(a_val, 15))
+                except:
+                    try:
+                        a_val_num = float(a_val)
+                    except:
+                        a_val_num = a_val
+                try:
+                    b_val_num = float(sp.N(b_val, 15))
+                except:
+                    try:
+                        b_val_num = float(b_val)
+                    except:
+                        b_val_num = b_val
+        
+                final_res_step_by_step = a_val_num + b_val_num
+                st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
+                st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
+                st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
+            except Exception:
+                # fallback si la suma falla (por ejemplo tipos raros)
+                st.error("❌ Error al sumar los límites. Tratando como divergente por precaución.")
+        
+        
+            except TimeoutError:
+                st.error("⏱️ **Timeout**: El cálculo está tomando demasiado tiempo. Esta función puede ser demasiado compleja para evaluar simbólicamente.")
+                st.info("💡 **Sugerencia**: Intenta simplificar la función o usar límites de integración más pequeños.")
+            except MemoryError:
+                st.error("💾 **Error de Memoria**: La función requiere demasiados recursos para calcular.")
+                st.info("💡 **Sugerencia**: Intenta con una función más simple o límites más acotados.")
             except Exception as e:
-                st.warning(f"⚠️ No se pudo graficar la función: {str(e)[:100]}")
-                plt.close(fig)
-                st.stop()
-
-            if np.any(np.isfinite(y_vals)):
-                ax.plot(x_vals, y_vals, color='#3b82f6', linewidth=2, label=f"f(x) = {st.session_state.saved_f}")
+                error_msg = str(e)
+                st.error(f"❌ **Error inesperado en el cálculo**: {error_msg[:200]}")
+                st.info("""
+                💡 **Tips de sintaxis**:
+                - Usa **'x'** como variable
+                - **`**` para potencias (ej. x**2)
+                - **x**(1/3) para ∛x
+                - **sqrt(x)** para √x
+                - **oo** para ∞
+                - **log(x)** para ln(x)
+                - **exp(x)** para eˣ
+                - **E** para la constante e
                 
-                mask = np.isfinite(y_vals)
-                if np.any(mask):
-                    ax.fill_between(x_vals[mask], 0, y_vals[mask], alpha=0.3, color='#3b82f6', label='Área bajo la curva')
-
-                if a != -oo and hasattr(a, "is_number") and a.is_number:
-                    try:
-                        ax.axvline(float(a), color='r', linestyle='--', label=f'Límite inferior: {a}', linewidth=2)
-                    except:
-                        pass
-                if b != oo and hasattr(b, "is_number") and b.is_number:
-                    try:
-                        ax.axvline(float(b), color='g', linestyle='--', label=f'Límite superior: {b}', linewidth=2)
-                    except:
-                        pass
-
-                ax.axhline(0, color='black', linewidth=0.5)
-                ax.set_title("🔍 Gráfica Interactiva: Visualiza el Área de la Integral", fontsize=16, color='#1e3a8a')
-                ax.set_xlabel("x", fontsize=12)
-                ax.set_ylabel("f(x)", fontsize=12)
-                ax.legend(loc='best')
-                ax.grid(True, alpha=0.3)
-
-                y_finite = y_vals[np.isfinite(y_vals)]
-                if len(y_finite) > 0:
-                    y_min, y_max = np.min(y_finite), np.max(y_finite)
-                    y_range = y_max - y_min
-                    if y_range < 0.1:
-                        y_center = (y_max + y_min) / 2
-                        ax.set_ylim(y_center - 1, y_center + 1)
+                📝 **Ejemplo**: `1/sqrt(1+x)` o `exp(-x**2)`
+                """)
+                
+                with st.expander("🔧 Detalles técnicos del error (para debugging)"):
+                    st.code(f"Error completo:\n{str(e)}")
+                    import traceback
+                    st.code(f"Traceback:\n{traceback.format_exc()}")
+        
+        
+        with st.sidebar:
+            st.markdown("<h2 style='color:#1E90FF; margin-bottom:0.2rem;'>⚙️ Configuración y Ayuda</h2>", unsafe_allow_html=True)
+            st.markdown("<h3 style='color:#1E90FF; margin-top:0.5rem;'>📝 Guía de Sintaxis</h3>", unsafe_allow_html=True)
+            st.write("- **f(x)**: La función debe usar **x** como variable (ej. `1/x**2`).")
+            st.write("- **a / b**: Límite inferior/superior.")
+            st.write("- **Potencias**: Usa **`**` (ej. `x**2`).")
+            st.write("- **Raíces**: Usa **sqrt(x)** para $\\sqrt{x}$ o potencias fraccionarias (ej. `x**(1/3)` para $\\sqrt[3]{x}$).")
+            st.write("- **Infinito**: Usa **oo** para $+\\infty$ o **-oo** para $-\\infty$.")
+            st.write("- **Funciones**: Usa **log(x)** para $\\ln(x)$, **exp(x)** para $e^x$, y **E** para la constante de Euler.")
+        
+            st.markdown("""
+                <div style='background-color:#eef2ff; color:#1e3a8a; padding:10px; border-radius:8px; font-weight:600;'>
+                💡 <strong>Nota del Desarrollador</strong>
+                <br>1. El sistema identifica si es **Propia** o **Impropia** (y el tipo).
+                <br>2. Primero se calcula la **Antiderivada** **F(x)**.
+                <br>3. Luego se aplica el **Límite** correspondiente (a **t** o **épsilon**).
+                <br>4. La **convergencia** se declara solo si el límite final es **finito**.
+                <br>5. La respuesta final está **validada con SymPy** para máxima confianza.
+                </div>
+                """, unsafe_allow_html=True)
+        
+            modo = st.selectbox("✨ Opciones de Gráfica", ["Estándar", "Avanzado (con Gráfica Auto)"], index=0, key="modo_select")
+            if modo == "Avanzado (con Gráfica Auto)":
+                st.checkbox("Activar gráfica automática al resolver", value=True, key="sidebar_auto_graf")
+        
+            st.markdown("---")
+            st.markdown("### 🔎 Comprobar Java (en esta máquina)")
+            st.write("Si corres Streamlit en la misma PC donde está NetBeans, pulsa el botón y te diré la versión de Java.")
+            if st.button("Comprobar java -version"):
+                try:
+                    cmd = shlex.split("java -version")
+                    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    out, err = proc.communicate(timeout=5)
+                    output = err.strip() if err.strip() != "" else out.strip()
+                    if output == "":
+                        st.warning("No se obtuvo salida al ejecutar `java -version`. Asegúrate de que 'java' esté en el PATH del sistema.")
                     else:
-                        margin = y_range * 0.1
-                        ax.set_ylim(max(-1000, y_min - margin), min(1000, y_max + margin))
-                else:
-                    ax.set_ylim(-5, 5)
-
-                st.pyplot(fig)
-            else:
-                st.warning("⚠️ No se pudo generar la gráfica: la función no tiene valores finitos en el intervalo.")
+                        st.code(output)
+                        if "17" in output or "17." in output:
+                            st.success("Perfecto — tu Java parece ser JDK 17 (ok para el proyecto).")
+                        else:
+                            st.info("La versión detectada puede no ser Java 17. Si no es 17, instala Temurin / Adoptium JDK 17 para mayor compatibilidad.")
+                except FileNotFoundError:
+                    st.error("No se encontró el ejecutable 'java' en esta máquina. Es probable que no esté instalado o no esté en el PATH.")
+                except subprocess.TimeoutExpired:
+                    st.error("La comprobación tardó demasiado y fue cancelada.")
+                except Exception as e:
+                    st.error(f"Ocurrió un error al comprobar Java: {e}")
+        
+        tab1, tab2 = st.tabs(["🚀 Resolver Manual", "🧪 Ejemplos Rápidos"])
+        
+        with tab1:
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col1:
+                f_expr = st.text_input("🔢 f(x):", value="1/x**(5/3)", help="Ej: x**(1/3) | Escribe libremente", key="input_fx")
+            with col2:
+                a_lim = st.text_input("📏 a (inferior):", value="-1", help="Ej: 0 (singularidad), 1, o cualquier número", key="input_a")
+            with col3:
+                b_lim = st.text_input("📏 b (superior):", value="1", help="Ej: oo (infinito), 1, o cualquier número", key="input_b")
+        
+            progress_bar = st.progress(0)
+            if st.button("🔍 Resolver con Detalle Completo", type="primary", key="resolver_detalle_btn"):
+                for i in range(100):
+                    progress_bar.progress(i + 1)
+                st.session_state.saved_f = f_expr
+                st.session_state.saved_a = a_lim
+                st.session_state.saved_b = b_lim
+                resolver_integral(f_expr, a_lim, b_lim)
+                if modo == "Avanzado (con Gráfica Auto)":
+                    st.session_state.show_graph = True
+        
+            st.session_state.show_graph = st.checkbox("📈 Mostrar Gráfica de f(x) (Área Bajo la Curva Visualizada)", value=st.session_state.show_graph, key="graph_checkbox")
+        
+            if st.session_state.show_graph and st.session_state.saved_f != "":
+                try:
+                    x_sym = Symbol('x')
+                    f_str_graph = st.session_state.saved_f.replace('E', 'exp(1)').replace('sqrt(', 'sqrt(')
+                    f = sp.sympify(f_str_graph)
+                    a = sp.sympify(st.session_state.saved_a)
+                    b = sp.sympify(st.session_state.saved_b)
+                    
+                    fig, ax = plt.subplots(figsize=(10, 6))
+        
+                    try:
+                        start = -10.0 if a == -oo else (float(a) if hasattr(a, "is_number") and a.is_number else -1.0)
+                        end = 10.0 if b == oo else (float(b) if hasattr(b, "is_number") and b.is_number else 1.0)
+                    except:
+                        start, end = -10.0, 10.0
+                    
+                    if start >= end:
+                        end = start + 10.0
+        
+                    singularities = find_singularities(f, start, end, x_sym)
+                    
+                    if len(singularities) == 0:
+                        x_vals = np.linspace(start, end, 500)
+                    else:
+                        segments = []
+                        points = [start] + [float(s) for s in singularities if start < float(s) < end] + [end]
+                        points = sorted(set(points))
+                        
+                        for i in range(len(points) - 1):
+                            seg_start = points[i] + 0.01 if i > 0 else points[i]
+                            seg_end = points[i+1] - 0.01 if i < len(points) - 2 else points[i+1]
+                            if seg_start < seg_end:
+                                segments.append(np.linspace(seg_start, seg_end, 100))
+                        
+                        x_vals = np.concatenate(segments) if segments else np.linspace(start, end, 500)
+        
+                    try:
+                        f_np = lambdify(x_sym, f, 'numpy')
+                        with np.errstate(all='ignore'):
+                            y_vals_raw = f_np(x_vals)
+                            
+                        if np.iscomplexobj(y_vals_raw):
+                            y_vals = np.real(y_vals_raw)
+                        else:
+                            y_vals = y_vals_raw
+                            
+                        y_vals[~np.isfinite(y_vals)] = np.nan
+                        
+                        percentile_99 = np.nanpercentile(np.abs(y_vals[np.isfinite(y_vals)]), 99) if np.any(np.isfinite(y_vals)) else 100
+                        y_limit = min(percentile_99 * 1.5, 1000)
+                        y_vals = np.clip(y_vals, -y_limit, y_limit)
+                    except Exception as e:
+                        st.warning(f"⚠️ No se pudo graficar la función: {str(e)[:100]}")
+                        plt.close(fig)
+                        st.stop()
+        
+                    if np.any(np.isfinite(y_vals)):
+                        ax.plot(x_vals, y_vals, color='#3b82f6', linewidth=2, label=f"f(x) = {st.session_state.saved_f}")
+                        
+                        mask = np.isfinite(y_vals)
+                        if np.any(mask):
+                            ax.fill_between(x_vals[mask], 0, y_vals[mask], alpha=0.3, color='#3b82f6', label='Área bajo la curva')
+        
+                        if a != -oo and hasattr(a, "is_number") and a.is_number:
+                            try:
+                                ax.axvline(float(a), color='r', linestyle='--', label=f'Límite inferior: {a}', linewidth=2)
+                            except:
+                                pass
+                        if b != oo and hasattr(b, "is_number") and b.is_number:
+                            try:
+                                ax.axvline(float(b), color='g', linestyle='--', label=f'Límite superior: {b}', linewidth=2)
+                            except:
+                                pass
+        
+                        ax.axhline(0, color='black', linewidth=0.5)
+                        ax.set_title("🔍 Gráfica Interactiva: Visualiza el Área de la Integral", fontsize=16, color='#1e3a8a')
+                        ax.set_xlabel("x", fontsize=12)
+                        ax.set_ylabel("f(x)", fontsize=12)
+                        ax.legend(loc='best')
+                        ax.grid(True, alpha=0.3)
+        
+                        y_finite = y_vals[np.isfinite(y_vals)]
+                        if len(y_finite) > 0:
+                            y_min, y_max = np.min(y_finite), np.max(y_finite)
+                            y_range = y_max - y_min
+                            if y_range < 0.1:
+                                y_center = (y_max + y_min) / 2
+                                ax.set_ylim(y_center - 1, y_center + 1)
+                            else:
+                                margin = y_range * 0.1
+                                ax.set_ylim(max(-1000, y_min - margin), min(1000, y_max + margin))
+                        else:
+                            ax.set_ylim(-5, 5)
+        
+                        st.pyplot(fig)
+                    else:
+                        st.warning("⚠️ No se pudo generar la gráfica: la función no tiene valores finitos en el intervalo.")
+                    
+                    plt.close(fig)
+                    
+                except Exception as e:
+                    st.error(f"❌ Error al generar gráfica: {str(e)[:150]}")
+                    try:
+                        plt.close(fig)
+                    except:
+                        pass
+        
+        with tab2:
+            st.markdown("### Ejemplos Clásicos de Integrales Impropias")
             
-            plt.close(fig)
+            col_ej1, col_ej2, col_ej3 = st.columns(3)
+            with col_ej1:
+                with st.expander("Ej1: ∫ 1/x² dx de 1 a ∞ (Converge)"):
+                    st.write("**Función:** 1/x² | **Límites:** a=1, b=∞")
+                    if st.button("Resolver Ejemplo 1", key="ej1"):
+                        st.session_state.saved_f = "1/x**2"
+                        st.session_state.saved_a = "1"
+                        st.session_state.saved_b = "oo"
+                        resolver_integral("1/x**2", "1", "oo")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            with col_ej2:
+                with st.expander("Ej2: ∫ 1/√x dx de 0 a 1 (Converge)"):
+                    st.write("**Función:** 1/√x | **Límites:** a=0, b=1")
+                    if st.button("Resolver Ejemplo 2", key="ej2"):
+                        st.session_state.saved_f = "1/sqrt(x)"
+                        st.session_state.saved_a = "0"
+                        st.session_state.saved_b = "1"
+                        resolver_integral("1/sqrt(x)", "0", "1")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            with col_ej3:
+                with st.expander("Ej3: ∫ 1/x dx de 1 a ∞ (Diverge)"):
+                    st.write("**Función:** 1/x | **Límites:** a=1, b=∞")
+                    if st.button("Resolver Ejemplo 3", key="ej3"):
+                        st.session_state.saved_f = "1/x"
+                        st.session_state.saved_a = "1"
+                        st.session_state.saved_b = "oo"
+                        resolver_integral("1/x", "1", "oo")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            st.markdown("---")
+        
+            col_ej4, col_ej5, col_ej6 = st.columns(3)
+            with col_ej4:
+                with st.expander("Ej4: ∫ ln(x) dx de 0 a 1 (Converge)"):
+                    st.write("**Función:** ln(x) | **Límites:** a=0, b=1")
+                    if st.button("Resolver Ejemplo 4", key="ej4"):
+                        st.session_state.saved_f = "log(x)"
+                        st.session_state.saved_a = "0"
+                        st.session_state.saved_b = "1"
+                        resolver_integral("log(x)", "0", "1")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            with col_ej5:
+                with st.expander("Ej5: ∫ 1/x^(5/3) dx de -1 a 1 (Diverge)"):
+                    st.write("**Función:** 1/x^(5/3) | **Límites:** a=-1, b=1")
+                    if st.button("Resolver Ejemplo 5", key="ej5"):
+                        st.session_state.saved_f = "1/x**(5/3)"
+                        st.session_state.saved_a = "-1"
+                        st.session_state.saved_b = "1"
+                        resolver_integral("1/x**(5/3)", "-1", "1")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            with col_ej6:
+                with st.expander("Ej6: ∫ x² dx de 0 a 2 (Propia - Converge)"):
+                    st.write("**Función:** x² | **Límites:** a=0, b=2")
+                    if st.button("Resolver Ejemplo 6", key="ej6"):
+                        st.session_state.saved_f = "x**2"
+                        st.session_state.saved_a = "0"
+                        st.session_state.saved_b = "2"
+                        resolver_integral("x**2", "0", "2")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+                            st.markdown("---")
+        
+            col_ej7, col_ej8, col_ej9 = st.columns(3)
+            with col_ej7:
+                with st.expander("Ej7: ∫ e^(-x) dx de 0 a ∞ (Converge)"):
+                    st.write("**Función:** e^(-x) | **Límites:** a=0, b=∞")
+                    if st.button("Resolver Ejemplo 7", key="ej7"):
+                        st.session_state.saved_f = "exp(-x)"
+                        st.session_state.saved_a = "0"
+                        st.session_state.saved_b = "oo"
+                        resolver_integral("exp(-x)", "0", "oo")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            with col_ej8:
+                with st.expander("Ej8: ∫ 1/(1+x²) dx de -∞ a ∞ (Converge)"):
+                    st.write("**Función:** 1/(1+x²) | **Límites:** a=-∞, b=∞")
+                    if st.button("Resolver Ejemplo 8", key="ej8"):
+                        st.session_state.saved_f = "1/(1+x**2)"
+                        st.session_state.saved_a = "-oo"
+                        st.session_state.saved_b = "oo"
+                        resolver_integral("1/(1+x**2)", "-oo", "oo")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            with col_ej9:
+                with st.expander("Ej9: ∫ x/√(x²+1) dx de 0 a ∞ (Diverge)"):
+                    st.write("**Función:** x/√(x²+1) | **Límites:** a=0, b=∞")
+                    if st.button("Resolver Ejemplo 9", key="ej9"):
+                        st.session_state.saved_f = "x/sqrt(x**2+1)"
+                        st.session_state.saved_a = "0"
+                        st.session_state.saved_b = "oo"
+                        resolver_integral("x/sqrt(x**2+1)", "0", "oo")
+                        if modo == "Avanzado (con Gráfica Auto)":
+                            st.session_state.show_graph = True
+        
+            st.markdown("---")
+            st.markdown("""
+            ### 📚 Notas Importantes sobre los Ejemplos
             
-        except Exception as e:
-            st.error(f"❌ Error al generar gráfica: {str(e)[:150]}")
-            try:
-                plt.close(fig)
-            except:
-                pass
-
-with tab2:
-    st.markdown("### Ejemplos Clásicos de Integrales Impropias")
-    
-    col_ej1, col_ej2, col_ej3 = st.columns(3)
-    with col_ej1:
-        with st.expander("Ej1: ∫ 1/x² dx de 1 a ∞ (Converge)"):
-            st.write("**Función:** 1/x² | **Límites:** a=1, b=∞")
-            if st.button("Resolver Ejemplo 1", key="ej1"):
-                st.session_state.saved_f = "1/x**2"
-                st.session_state.saved_a = "1"
-                st.session_state.saved_b = "oo"
-                resolver_integral("1/x**2", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    with col_ej2:
-        with st.expander("Ej2: ∫ 1/√x dx de 0 a 1 (Converge)"):
-            st.write("**Función:** 1/√x | **Límites:** a=0, b=1")
-            if st.button("Resolver Ejemplo 2", key="ej2"):
-                st.session_state.saved_f = "1/sqrt(x)"
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "1"
-                resolver_integral("1/sqrt(x)", "0", "1")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    with col_ej3:
-        with st.expander("Ej3: ∫ 1/x dx de 1 a ∞ (Diverge)"):
-            st.write("**Función:** 1/x | **Límites:** a=1, b=∞")
-            if st.button("Resolver Ejemplo 3", key="ej3"):
-                st.session_state.saved_f = "1/x"
-                st.session_state.saved_a = "1"
-                st.session_state.saved_b = "oo"
-                resolver_integral("1/x", "1", "oo")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    st.markdown("---")
-
-    col_ej4, col_ej5, col_ej6 = st.columns(3)
-    with col_ej4:
-        with st.expander("Ej4: ∫ ln(x) dx de 0 a 1 (Converge)"):
-            st.write("**Función:** ln(x) | **Límites:** a=0, b=1")
-            if st.button("Resolver Ejemplo 4", key="ej4"):
-                st.session_state.saved_f = "log(x)"
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "1"
-                resolver_integral("log(x)", "0", "1")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    with col_ej5:
-        with st.expander("Ej5: ∫ 1/x^(5/3) dx de -1 a 1 (Diverge)"):
-            st.write("**Función:** 1/x^(5/3) | **Límites:** a=-1, b=1")
-            if st.button("Resolver Ejemplo 5", key="ej5"):
-                st.session_state.saved_f = "1/x**(5/3)"
-                st.session_state.saved_a = "-1"
-                st.session_state.saved_b = "1"
-                resolver_integral("1/x**(5/3)", "-1", "1")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    with col_ej6:
-        with st.expander("Ej6: ∫ x² dx de 0 a 2 (Propia - Converge)"):
-            st.write("**Función:** x² | **Límites:** a=0, b=2")
-            if st.button("Resolver Ejemplo 6", key="ej6"):
-                st.session_state.saved_f = "x**2"
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "2"
-                resolver_integral("x**2", "0", "2")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-                    st.markdown("---")
-
-    col_ej7, col_ej8, col_ej9 = st.columns(3)
-    with col_ej7:
-        with st.expander("Ej7: ∫ e^(-x) dx de 0 a ∞ (Converge)"):
-            st.write("**Función:** e^(-x) | **Límites:** a=0, b=∞")
-            if st.button("Resolver Ejemplo 7", key="ej7"):
-                st.session_state.saved_f = "exp(-x)"
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "oo"
-                resolver_integral("exp(-x)", "0", "oo")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    with col_ej8:
-        with st.expander("Ej8: ∫ 1/(1+x²) dx de -∞ a ∞ (Converge)"):
-            st.write("**Función:** 1/(1+x²) | **Límites:** a=-∞, b=∞")
-            if st.button("Resolver Ejemplo 8", key="ej8"):
-                st.session_state.saved_f = "1/(1+x**2)"
-                st.session_state.saved_a = "-oo"
-                st.session_state.saved_b = "oo"
-                resolver_integral("1/(1+x**2)", "-oo", "oo")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    with col_ej9:
-        with st.expander("Ej9: ∫ x/√(x²+1) dx de 0 a ∞ (Diverge)"):
-            st.write("**Función:** x/√(x²+1) | **Límites:** a=0, b=∞")
-            if st.button("Resolver Ejemplo 9", key="ej9"):
-                st.session_state.saved_f = "x/sqrt(x**2+1)"
-                st.session_state.saved_a = "0"
-                st.session_state.saved_b = "oo"
-                resolver_integral("x/sqrt(x**2+1)", "0", "oo")
-                if modo == "Avanzado (con Gráfica Auto)":
-                    st.session_state.show_graph = True
-
-    st.markdown("---")
-    st.markdown("""
-    ### 📚 Notas Importantes sobre los Ejemplos
-    
-    - **Ej1, Ej2, Ej7, Ej8**: Integrales impropias **convergentes** (el límite existe y es finito).
-    - **Ej3, Ej9**: Integrales impropias **divergentes** (el límite es infinito o no existe).
-    - **Ej4**: Singularidad en el límite inferior, pero **converge**.
-    - **Ej5**: Singularidad **interna** en x=0, **diverge** porque los límites laterales no coinciden.
-    - **Ej6**: Integral **propia** (sin impropiedad), cálculo directo.
-    
-    ⚠️ **Limitaciones del Sistema**:
-    - No todas las antiderivadas se pueden calcular simbólicamente.
-    - Algunas funciones muy complejas pueden fallar o ser muy lentas.
-    - Se usa respaldo numérico (mpmath) cuando SymPy no puede proceder.
-    - Las gráficas pueden no mostrar bien funciones con singularidades fuertes.
-    
-    ✅ **Funciona bien con**:
-    - Integrales estándar: 1/x², 1/√x, exponenciales, logaritmos
-    - Límites infinitos simples
-    - Singularidades en extremos
-    - Funciones polinómicas y racionales básicas
-    """)
+            - **Ej1, Ej2, Ej7, Ej8**: Integrales impropias **convergentes** (el límite existe y es finito).
+            - **Ej3, Ej9**: Integrales impropias **divergentes** (el límite es infinito o no existe).
+            - **Ej4**: Singularidad en el límite inferior, pero **converge**.
+            - **Ej5**: Singularidad **interna** en x=0, **diverge** porque los límites laterales no coinciden.
+            - **Ej6**: Integral **propia** (sin impropiedad), cálculo directo.
+            
+            ⚠️ **Limitaciones del Sistema**:
+            - No todas las antiderivadas se pueden calcular simbólicamente.
+            - Algunas funciones muy complejas pueden fallar o ser muy lentas.
+            - Se usa respaldo numérico (mpmath) cuando SymPy no puede proceder.
+            - Las gráficas pueden no mostrar bien funciones con singularidades fuertes.
+            
+            ✅ **Funciona bien con**:
+            - Integrales estándar: 1/x², 1/√x, exponenciales, logaritmos
+            - Límites infinitos simples
+            - Singularidades en extremos
+            - Funciones polinómicas y racionales básicas
+            """)
