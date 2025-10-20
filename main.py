@@ -436,7 +436,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
 
             # Si SymPy pudo obtener la antiderivada simbólica, usarla para calcular límites exactos
-            if F is not None:
+            if 'F' in locals() and F is not None:
                 try:
                     # Parte 1: integral desde t1 -> -oo hasta 0
                     expr_part1 = F.subs(x, 0) - F.subs(x, t1)
@@ -507,6 +507,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
         st.write(f"**Límites de Integración**: de ${latex(a)}$ a ${latex(b)}$")
 
         # Calcular antiderivada con timeout (solo en sistemas Unix/Linux)
+        F = None
         try:
             def timeout_handler(signum, frame):
                 raise TimeoutError("Cálculo tardó demasiado")
