@@ -430,11 +430,56 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             analysis_notes.append("Se debe dividir en dos integrales impropias:")
             st.latex(r"\int_{" + latex(a) + "}^{" + latex(b) + r"} f(x) dx = \lim_{t_1 \to " + c_latex + r"^-} \int_{" + latex(a) + "}^{t_1} f(x) dx + \lim_{t_2 \to " + c_latex + r"^+} \int_{t_2}^{" + latex(b) + r"} f(x) dx")
             analysis_notes.append("Si una de las dos partes diverge, la integral completa **DIVERGE**.")
-        elif mode == "infinite_both":
-            analysis_notes.append("Esta es una integral impropia por **límite infinito doble** ($-\infty$ a $\infty$).")
-            analysis_notes.append("Se resuelve dividiendo en dos integrales en un punto arbitrario $c$ (usamos $c=0$ por simplicidad):")
-            st.latex(r"\int_{-\infty}^{\infty} f(x) \, dx = \lim_{t_1 \to -\infty} \int_{t_1}^{0} f(x) \, dx + \lim_{t_2 \to \infty} \int_{0}^{t_2} f(x) \, dx")
-            analysis_notes.append("Si una de las dos partes diverge, la integral completa **DIVERGE**.")
+               elif mode == "infinite_both":
+            # Evaluación explícita de las dos partes: (-oo -> 0) y (0 -> oo)
+            t1, t2 = Symbol('t1'), Symbol('t2')
+            st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
+
+            # Si SymPy pudo obtener la antiderivada simbólica, usarla para calcular límites exactos
+            if F is not None:
+                try:
+                    # Parte 1: integral desde t1 -> -oo hasta 0
+                    expr_part1 = F.subs(x, 0) - F.subs(x, t1)
+                    lim_val_1 = safe_limit(expr_part1, t1, -oo)
+                    lim_val_1 = clean_divergence_result(lim_val_1)
+                    lim_val_1_display = safe_float(lim_val_1)
+                    st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
+
+                    # Parte 2: integral desde 0 hasta t2 -> oo
+                    expr_part2 = F.subs(x, t2) - F.subs(x, 0)
+                    lim_val_2 = safe_limit(expr_part2, t2, oo)
+                    lim_val_2 = clean_divergence_result(lim_val_2)
+                    lim_val_2_display = safe_float(lim_val_2)
+                    st.markdown(f"**Resultado de la Parte 2 ($0$ a $\\infty$)**: ${latex(lim_val_2_display)}$")
+                except Exception:
+                    lim_val_1 = lim_val_2 = None
+                    lim_val_1_display = lim_val_2_display = None
+            else:
+                # Si no hay antiderivada simbólica, intentar con evaluación numérica
+                try:
+                    num1, conv1 = numeric_integral_backup(f, -oo, 0, x)
+                    num2, conv2 = numeric_integral_backup(f, 0, oo, x)
+
+                    if conv1:
+                        lim_val_1 = mp.mpf(num1)
+                        lim_val_1_display = safe_float(lim_val_1)
+                        st.markdown(f"**Resultado numérico Parte 1 ($-\\infty$ a $0$)**: {lim_val_1_display}")
+                    else:
+                        lim_val_1 = lim_val_1_display = None
+
+                    if conv2:
+                        lim_val_2 = mp.mpf(num2)
+                        lim_val_2_display = safe_float(lim_val_2)
+                        st.markdown(f"**Resultado numérico Parte 2 ($0$ a $\\infty$)**: {lim_val_2_display}")
+                    else:
+                        lim_val_2 = lim_val_2_display = None
+
+                    if conv1 and conv2:
+                        numeric_backup_used = True
+                except Exception:
+                    lim_val_1 = lim_val_2 = None
+                    lim_val_1_display = lim_val_2_display = None
+
         elif mode == "infinite_upper":
             analysis_notes.append("Esta es una integral impropia por **límite infinito superior**. Se resuelve como:")
             st.latex(r"\int_{" + latex(a) + r"}^\infty f(x) \, dx = \lim_{t \to \infty} \int_{" + latex(a) + r"}^t f(x) \, dx")
