@@ -805,8 +805,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
                 if (isinstance(lim_val_1_display, sp.Expr) and getattr(lim_val_1_display, "is_infinite", False)) and (isinstance(lim_val_2_display, sp.Expr) and getattr(lim_val_2_display, "is_infinite", False)) and (str(lim_val_1_display).startswith('-') and not str(lim_val_2_display).startswith('-')):
                      st.info("⚠️ **Aclaración de Signos**: La integral diverge porque el límite izquierdo es $\\mathbf{-\\infty}$ y el límite derecho es $\\mathbf{+\\infty}$.")
                 else:
-                    st.write(f"El resultado final muestra divergencia: ${latex(final_res_clean)}$")
-            elif mode == "infinite_both":
+                    st.write(f"El resultado final muestra divergencia: ${latex(final_res_clean)}$")            elif mode == "infinite_both":
                 st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
                 try:
                     st.markdown(f"**Resultado de la Parte 1 ($-\\infty$ a $0$)**: ${latex(lim_val_1_display)}$")
@@ -816,39 +815,19 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
                 st.markdown("### Paso 5: Análisis de Convergencia (Conclusión Final)")
 
-        # 👇 ESTE BLOQUE DEBE ESTAR A ESTE NIVEL, NO DENTRO DEL TRY# --- Normalizar y decidir convergencia de forma robusta ---
-def _display_is_missing(v):
-    return v is None
+        # 👇 ESTE BLOQUE DEBE ESTAR A ESTE NIVEL, NO DENTRO DEL TRY
+        # --- Normalizar y decidir convergencia de forma robusta ---
+        def _display_is_missing(v):
+            return v is None
 
-def _display_is_nan_or_zoo(v):
-    try:
-        s = str(v).lower()
-        return s in ['nan', 'zoo']
-    except:
-        return False
+        def _display_is_nan_or_zoo(v):
+            try:
+                s = str(v).lower()
+                return s in ['nan', 'zoo']
+            except:
+                return False
 
-def _display_is_infinite(v):
-    # reconoce varios formatos: SymPy oo, string "∞", enorme float, etc.
-    try:
-        if v is None:
-            return False
-        if getattr(v, "is_infinite", False):
-            return True
-        s = str(v).strip()
-        if s == "∞":
-            return True
-        s_low = s.lower()
-        if s_low in ['oo', 'infinity', '+oo', '-oo']:
-            return True
-        # valores numéricos demasiado grandes interpretados como infinito
-        try:
-            if isinstance(v, (int, float)) and abs(v) > 1e100:
-                return True
-        except:
-            pass
-        return False
-    except:
-        return False
+        def _display_is_infinite(v):
 
 # evaluar estados
 missing1 = _display_is_missing(lim_val_1_display)
