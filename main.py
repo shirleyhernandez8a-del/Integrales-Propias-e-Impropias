@@ -816,20 +816,92 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 
                 st.markdown("### Paso 5: Análisis de Convergencia (Conclusión Final)")
 
-        # 👇 ESTE BLOQUE DEBE ESTAR A ESTE NIVEL, NO DENTRO DEL TRY
-        if lim_val_1_display is None or lim_val_2_display is None:
-            st.error("❌ La integral DIVERGE (uno de los límites no existe).")
-        elif any([
-            str(lim_val_1_display).lower() in ['oo', 'zoo', 'nan', 'infinity'],
-            str(lim_val_2_display).lower() in ['oo', 'zoo', 'nan', 'infinity']
-        ]):
-            st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
-            st.write("**Explicación detallada**: Al menos uno de los límites laterales tiende a infinito, por lo tanto la integral no converge.")
-        else:
-            final_res_step_by_step = lim_val_1_display + lim_val_2_display
-            st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
-            st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
-            st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
+        # 👇 ESTE BLOQUE DEBE ESTAR A ESTE NIVEL, NO DENTRO DEL TRY# --- Normalizar y decidir convergencia de forma robusta ---
+def _display_is_missing(v):
+    return v is None
+
+def _display_is_nan_or_zoo(v):
+    try:
+        s = str(v).lower()
+        return s in ['nan', 'zoo']
+    except:
+        return False
+
+def _display_is_infinite(v):
+    # reconoce varios formatos: SymPy oo, string "∞", enorme float, etc.
+    try:
+        if v is None:
+            return False
+        if getattr(v, "is_infinite", False):
+            return True
+        s = str(v).strip()
+        if s == "∞":
+            return True
+        s_low = s.lower()
+        if s_low in ['oo', 'infinity', '+oo', '-oo']:
+            return True
+        # valores numéricos demasiado grandes interpretados como infinito
+        try:
+            if isinstance(v, (int, float)) and abs(v) > 1e100:
+                return True
+        except:
+            pass
+        return False
+    except:
+        return False
+
+# evaluar estados
+missing1 = _display_is_missing(lim_val_1_display)
+missing2 = _display_is_missing(lim_val_2_display)
+nan1 = _display_is_nan_or_zoo(lim_val_1_display)
+nan2 = _display_is_nan_or_zoo(lim_val_2_display)
+inf1 = _display_is_infinite(lim_val_1_display)
+inf2 = _display_is_infinite(lim_val_2_display)
+
+# Caso: falta alguno de los límites (no calculado)
+if missing1 or missing2:
+    st.error("❌ La integral DIVERGE (uno de los límites no existe).")
+# Caso: alguno da NaN/zoo -> diverge/indefinido
+elif nan1 or nan2:
+    st.error("❌ La integral DIVERGE / Límite indefinido (nan/zoo).")
+# Caso: alguno es infinito -> diverge (no converge)
+elif inf1 or inf2:
+    # Mostrar detalles claros
+    try:
+        st.error("❌ La integral DIVERGE (uno de los límites es infinito).")
+        st.write("**Detalles:**")
+        st.write(f"Parte 1: {lim_val_1_display}    |    Parte 2: {lim_val_2_display}")
+    except:
+        st.error("❌ La integral DIVERGE (∞ detectado).")
+# Caso: ambos finitos -> sumar y mostrar resultado
+else:
+    try:
+        # convertir a número si hace falta y sumar
+        a_val = lim_val_1_display
+        b_val = lim_val_2_display
+        # si son SymPy Floats/MP, intentar convertir a Python float o sp.N
+        try:
+            a_val_num = float(sp.N(a_val, 15))
+        except:
+            try:
+                a_val_num = float(a_val)
+            except:
+                a_val_num = a_val
+        try:
+            b_val_num = float(sp.N(b_val, 15))
+        except:
+            try:
+                b_val_num = float(b_val)
+            except:
+                b_val_num = b_val
+
+        final_res_step_by_step = a_val_num + b_val_num
+        st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
+        st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
+        st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
+    except Exception:
+        # fallback si la suma falla (por ejemplo tipos raros)
+        st.error("❌ Error al sumar los límites. Tratando como divergente por precaución.")
 
 
     except TimeoutError:
