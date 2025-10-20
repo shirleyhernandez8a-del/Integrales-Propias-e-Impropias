@@ -430,7 +430,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
             analysis_notes.append("Se debe dividir en dos integrales impropias:")
             st.latex(r"\int_{" + latex(a) + "}^{" + latex(b) + r"} f(x) dx = \lim_{t_1 \to " + c_latex + r"^-} \int_{" + latex(a) + "}^{t_1} f(x) dx + \lim_{t_2 \to " + c_latex + r"^+} \int_{t_2}^{" + latex(b) + r"} f(x) dx")
             analysis_notes.append("Si una de las dos partes diverge, la integral completa **DIVERGE**.")
-               elif mode == "infinite_both":
+        elif mode == "infinite_both":
             # Evaluación explícita de las dos partes: (-oo -> 0) y (0 -> oo)
             t1, t2 = Symbol('t1'), Symbol('t2')
             st.markdown("### Paso 3 & 4: Evaluación de los Límites Laterales")
