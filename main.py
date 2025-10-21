@@ -498,14 +498,28 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 		if mode == "proper":
 			
 			if F is not None:
-				F_b = F.subs(x, b)
-				F_a = F.subs(x, a)
-				expr = F_b - F_a
 				st.markdown(r"Aplicamos el Teorema Fundamental del Cálculo:")
 				st.latex(r"\int_{" + latex(a) + "}^{" + latex(b) + r"} f(x) \, dx = F(" + latex(b) + ") - F(" + latex(a) + ")")
+				
+				F_b = F.subs(x, b)
+				F_a = F.subs(x, a)
+
+				st.latex(r"= \left[" + latex(F_b) + r"\right] - \left[" + latex(F_a) + r"\right]")
+				# Caso especial para límites infinitos con arctan
+				if (a == -oo or b == oo) and 'atan' in str(F):
+					if b == oo and a == -oo:
+						st.latex(r"= \lim_{x \to \infty} \arctan(x) - \lim_{x \to -\infty} \arctan(x)")
+						st.latex(r"= \frac{\pi}{2} - \left(-\frac{\pi}{2}\right)")
+						st.latex(r"= \pi")
+					elif b == oo:
+						st.latex(r"= \lim_{x \to \infty} \arctan(x) - \arctan(" + latex(a) + ")")
+						st.latex(r"= \frac{\pi}{2} - \arctan(" + latex(a) + ")")
+					elif a == -oo:
+						st.latex(r"= \arctan(" + latex(b) + r") - \lim_{x \to -\infty} \arctan(x)")
+						st.latex(r"= \arctan(" + latex(b) + r") - \left(-\frac{\pi}{2}\right)")
+				expr = F_b - F_a
 				final_res_step_by_step = sp.simplify(expr)
-		
-				# ✅ Corrección: convertir a float seguro
+				 # ✅ Corrección: convertir a float seguro
 				final_res_step_by_step_display = safe_float(final_res_step_by_step)
 		
 				# ✅ Mostrar resultado corregido
