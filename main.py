@@ -492,10 +492,10 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 		t = Symbol('t')
 		epsilon = Symbol('epsilon')
 		lim_val = None
-
-		st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
 		
 		if mode == "proper":
+			
+			st.write("**Paso 3 & 4: Evaluación y Cálculo Explícito del Límite**")
 			
 			if F is not None:
 				st.markdown(r"Aplicamos el Teorema Fundamental del Cálculo:")
