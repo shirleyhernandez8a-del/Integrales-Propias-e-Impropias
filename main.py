@@ -528,7 +528,7 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 						val = float(final_res_step_by_step_display)
 						if abs(val - np.pi) <1e-10:
 							st.latex(r"\int_{-\infty}^{\infty} \frac{1}{1 + x^2} \, dx = \pi")
-							st.success("✅ Resultado: $\\pi$ (la integral converge perfectamente)")
+							st.markdown("✅ Resultado: $\\pi$ (la integral converge perfectamente)")
 						else:
 							st.latex(r"= " + latex(final_res_step_by_step_display))
 					except Exception:
