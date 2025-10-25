@@ -585,6 +585,16 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 				final_res_step_by_step = lim_val
 				st.markdown(r"Sustituimos el límite inferior singular con $\epsilon$ y tomamos el límite lateral $\epsilon \to a^{+}$:") 
 				st.latex(r"\lim_{\epsilon \to " + latex(a) + r"^{+}} \left[ " + latex(sp.simplify(expr_b_eps)) + r" \right] = " + latex(clean_divergence_result(lim_val)))
+				try:
+					val_check = clean_divergence_result(lim_val)
+					if val_check in [sp.oo, -sp.oo] or str(val_check).lower() in ['oo', '-oo', 'zoo', 'infinity']:
+						st.error("❌ **La integral DIVERGE** (el límite tiende a infinito en el extremo inferior).")
+					elif val_check is sp.nan or str(val_check).lower() == 'nan':
+						st.error("❌ **La integral DIVERGE** (el límite no existe o es indefinido).")
+					else:
+						st.success(f"✅ **La integral CONVERGE**. Resultado: {latex(val_check)}")
+				except Exception:
+					st.warning("⚠️ No se pudo determinar con certeza si la integral converge o diverge.")
 			else:
 				try:
 					a_num = float(a)
