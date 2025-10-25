@@ -799,7 +799,17 @@ def resolver_integral(f_str, a_str, b_str, var='x'):
 				st.success(f"✅ La integral CONVERGE. Resultado: {final_res_step_by_step}")
 				st.write(f"**Suma total:** ${latex(final_res_step_by_step)}$")
 				st.write("**Explicación detallada**: Ambos límites son finitos, por lo tanto la integral converge.")
-
+			else:
+				# 🔴 Caso general faltante: cuando no entra a ninguna de las condiciones anteriores
+				try:
+					if final_res_clean in [sp.oo, -sp.oo] or str(final_res_clean).lower() in ['oo', '-oo', 'zoo', 'infinity']:
+						st.error("❌ **La integral DIVERGE** (el límite tiende a infinito).")
+					elif final_res_clean is sp.nan or str(final_res_clean).lower() == 'nan':
+						st.error("❌ **La integral DIVERGE** (el límite no existe o es indefinido).")
+					else:
+						st.success(f"✅ **La integral CONVERGE**. Resultado: {latex(final_res_clean)}")
+				except Exception:
+					st.warning("⚠️ No se pudo determinar con certeza si la integral converge o diverge.")
 
 
 	except TimeoutError:
